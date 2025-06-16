@@ -65,21 +65,24 @@
       padding: 20px;
     }
 
-    .items {
+    .scroll-productos {
       display: flex;
-      flex-direction: column;
+      overflow-x: auto;
       gap: 16px;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
     }
 
     .item-card {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      flex: 0 0 auto;
+      scroll-snap-align: start;
+      width: 220px;
       background-color: #f8fff8;
       padding: 15px;
       border: 1px solid #cceccc;
       border-radius: 6px;
       text-align: center;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
     }
 
     .item-card img {
@@ -148,7 +151,7 @@
   <p>Selecciona una categoría para comenzar tu pedido</p>
 </header>
 
-<!-- Tarjetas de categorías (scroll horizontal) -->
+<!-- Categorías -->
 <div class="categorias-scroll" id="menu-categorias">
   <div class="card-categoria" onclick="mostrarCategoria('promos')">
     <div class="imagen-categoria" style="background-image: url('img/promos.jpg');"></div>
@@ -166,10 +169,10 @@
   </div>
 </div>
 
-<!-- Contenido de cada categoría -->
+<!-- Promociones -->
 <div id="promos" class="contenido-categoria">
   <h2>🌟 Promociones</h2>
-  <div class="items">
+  <div class="scroll-productos">
     <div class="item-card">
       <img src="img/promocion1.jpg" alt="Promo 1">
       <span>Baguette + Agua fresca — $70</span>
@@ -183,9 +186,10 @@
   </div>
 </div>
 
+<!-- Bebidas -->
 <div id="bebidas" class="contenido-categoria">
   <h2>🥤 Bebidas</h2>
-  <div class="items">
+  <div class="scroll-productos">
     <div class="item-card">
       <img src="img/maracuya.jpg" alt="Maracuyá">
       <span>Agua de maracuyá — $25</span>
@@ -209,9 +213,10 @@
   </div>
 </div>
 
+<!-- Alimentos -->
 <div id="alimentos" class="contenido-categoria">
   <h2>🥪 Alimentos</h2>
-  <div class="items">
+  <div class="scroll-productos">
     <div class="item-card">
       <img src="img/jamon.jpg" alt="Jamon serrano">
       <span>Baguette jamón serrano — $60</span>
