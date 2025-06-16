@@ -1,4 +1,4 @@
-
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
@@ -19,33 +19,36 @@
       padding: 1.5rem 0;
     }
 
-    .categorias {
+    /* Contenedor horizontal con scroll tipo carrusel */
+    .categorias-scroll {
       display: flex;
-      flex-direction: column;
-      align-items: center;
+      overflow-x: auto;
       gap: 20px;
       padding: 20px;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
     }
 
     .card-categoria {
-      width: 90%;
-      max-width: 400px;
+      flex: 0 0 auto;
+      width: 250px;
       background-color: #fff;
       border-radius: 12px;
       overflow: hidden;
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      scroll-snap-align: start;
       cursor: pointer;
       transition: transform 0.2s ease;
     }
 
     .card-categoria:hover {
-      transform: scale(1.02);
+      transform: scale(1.03);
     }
 
     .imagen-categoria {
       width: 100%;
-      height: 180px;
-      background-color: #d8ecd6; /* color de fondo mientras no haya imagen */
+      height: 160px;
+      background-color: #d8ecd6; /* fondo mientras no haya imagen */
       background-size: cover;
       background-position: center;
     }
@@ -58,13 +61,11 @@
       color: #444;
     }
 
-    /* Estilos para el contenido desplegado (oculto inicialmente) */
     .contenido-categoria {
       display: none;
       padding: 20px;
     }
 
-    /* Opcional: puedes ocultar las categorías cuando se abra una */
     .ocultar {
       display: none;
     }
@@ -74,47 +75,43 @@
 
 <header>
   <h1>Menú Punto Verde</h1>
-  <p>Toca una categoría para comenzar tu pedido</p>
+  <p>Selecciona una categoría para comenzar tu pedido</p>
 </header>
 
-<!-- Tarjetas de categorías -->
-<div class="categorias">
+<!-- 🔄 Scroll horizontal de categorías -->
+<div class="categorias-scroll">
   <div class="card-categoria" onclick="mostrarCategoria('promos')">
-    <div class="imagen-categoria" style="background-image: url('ruta-a-imagen-promos.jpg');"></div>
+    <div class="imagen-categoria" style="background-image: url('ruta-promos.jpg');"></div>
     <div class="nombre-categoria">🌟 Promociones</div>
   </div>
 
   <div class="card-categoria" onclick="mostrarCategoria('bebidas')">
-    <div class="imagen-categoria" style="background-image: url('ruta-a-imagen-bebidas.jpg');"></div>
+    <div class="imagen-categoria" style="background-image: url('ruta-bebidas.jpg');"></div>
     <div class="nombre-categoria">🥤 Bebidas</div>
   </div>
 
   <div class="card-categoria" onclick="mostrarCategoria('alimentos')">
-    <div class="imagen-categoria" style="background-image: url('ruta-a-imagen-alimentos.jpg');"></div>
+    <div class="imagen-categoria" style="background-image: url('ruta-alimentos.jpg');"></div>
     <div class="nombre-categoria">🥪 Alimentos</div>
   </div>
+
+  <!-- Puedes agregar más categorías si algún día expandes -->
 </div>
 
-<!-- Aquí iría el contenido que ya programamos (productos, carrito, etc.) -->
-<div id="promos" class="contenido-categoria">
-  <!-- Aquí se insertará el bloque de promociones al seleccionarlas -->
-</div>
-<div id="bebidas" class="contenido-categoria">
-  <!-- Aquí se insertará el bloque de bebidas al seleccionarlas -->
-</div>
-<div id="alimentos" class="contenido-categoria">
-  <!-- Aquí se insertará el bloque de alimentos al seleccionarlas -->
-</div>
+<!-- 🔽 Aquí se desplegarán los productos al seleccionar una categoría -->
+<div id="promos" class="contenido-categoria"></div>
+<div id="bebidas" class="contenido-categoria"></div>
+<div id="alimentos" class="contenido-categoria"></div>
 
 <script>
   function mostrarCategoria(id) {
-    // Oculta tarjetas de selección
-    document.querySelector('.categorias').classList.add('ocultar');
+    // Ocultar contenedor de tarjetas
+    document.querySelector('.categorias-scroll').classList.add('ocultar');
 
-    // Muestra la categoría elegida
+    // Mostrar contenido seleccionado
     document.getElementById(id).style.display = 'block';
 
-    // Aquí podrías cargar dinámicamente el contenido o ya tenerlo listo
+    // Puedes aquí insertar el contenido dinámico (productos + carrito)
   }
 </script>
 
