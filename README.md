@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>MenÃº Punto Verde</title>
+  <title>Punto Verde</title>
   <style>
     :root {
       --bg: #f0f5f0;
@@ -194,5 +194,166 @@
   </style>
 </head>
 <body>
+  <body>
+  <header>
+    <h1>Menú Punto Verde</h1>
+  </header>
+
+  <div class="categorias-scroll">
+    <div class="card-categoria" onclick="mostrarCategoria('promos')">
+      <div class="imagen-categoria" style="background-image: url('img/promo.jpg');"></div>
+      <div class="nombre-categoria">Promociones</div>
+    </div>
+    <div class="card-categoria" onclick="mostrarCategoria('bebidas')">
+      <div class="imagen-categoria" style="background-image: url('img/bebida.jpg');"></div>
+      <div class="nombre-categoria">Bebidas</div>
+    </div>
+    <div class="card-categoria" onclick="mostrarCategoria('alimentos')">
+      <div class="imagen-categoria" style="background-image: url('img/alimento.jpg');"></div>
+      <div class="nombre-categoria">Alimentos</div>
+    </div>
+  </div>
+
+  <div id="promos" class="contenido-categoria">
+    <h2>Promociones</h2>
+    <div class="scroll-productos">
+      <div class="item-card">
+        <h3>Combo Wrap + Agua</h3>
+        <p>$65.00</p>
+        <button onclick="agregarAlCarrito('Combo Wrap + Agua', 65)">Agregar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="bebidas" class="contenido-categoria">
+    <h2>Bebidas</h2>
+    <div class="scroll-productos">
+      <div class="item-card">
+        <h3>Agua de Maracuyá</h3>
+        <p>$20.00</p>
+        <button onclick="agregarAlCarrito('Agua de Maracuyá', 20)">Agregar</button>
+      </div>
+      <div class="item-card">
+        <h3>Agua de Ciruela</h3>
+        <p>$20.00</p>
+        <button onclick="agregarAlCarrito('Agua de Ciruela', 20)">Agregar</button>
+      </div>
+      <div class="item-card">
+        <h3>Agua de Guanábana</h3>
+        <p>$20.00</p>
+        <button onclick="agregarAlCarrito('Agua de Guanábana', 20)">Agregar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="alimentos" class="contenido-categoria">
+    <h2>Alimentos</h2>
+    <div class="scroll-productos">
+      <div class="item-card">
+        <h3>Baguette de Pollo</h3>
+        <p>$40.00</p>
+        <button onclick="agregarAlCarrito('Baguette de Pollo', 40)">Agregar</button>
+      </div>
+      <div class="item-card">
+        <h3>Cuernito de Jamón</h3>
+        <p>$35.00</p>
+        <button onclick="agregarAlCarrito('Cuernito de Jamón', 35)">Agregar</button>
+      </div>
+
+        <div id="carrito" class="ocultar">
+    <h2>Carrito de Compras</h2>
+    <ul id="lista-carrito"></ul>
+    <p><strong>Total: $<span id="total">0.00</span></strong></p>
+    <button onclick="finalizarCompra()">Finalizar compra</button>
+  </div>
+
+  <button class="boton-flotante" onclick="toggleCarrito()">🛒 Ver carrito</button>
+  <button class="admin-button" onclick="abrirModal()">⚙️ Acceso Personal</button>
+
+  <div id="adminModal" class="modal ocultar">
+    <div class="modal-content">
+      <h3>Acceso Personal Autorizado</h3>
+      <input type="password" id="adminPass" placeholder="Ingresa la contraseña" />
+      <br />
+      <button onclick="validarAcceso()">Entrar</button>
+    </div>
+  </div>
+
+  <div id="adminPanel" class="contenido-categoria ocultar">
+    <h2>Panel de Administración</h2>
+    <ul>
+      <li>Ventas del día: $<span id="ventasDia">0.00</span></li>
+      <li>Ventas semanales: $<span id="ventasSemana">0.00</span></li>
+      <li>Productos más vendidos: <span id="topProductos">Baguette de Pollo</span></li>
+      <li>Promociones efectivas: <span id="promoEfectiva">Combo Wrap + Agua</span></li>
+      <li>Ticket promedio: $<span id="ticketPromedio">52.50</span></li>
+    </ul>
+  </div>
+    <script>
+    let carrito = JSON.parse(localStorage.getItem('carrito')) || [];
+
+    function mostrarCategoria(id) {
+      document.querySelectorAll('.contenido-categoria').forEach(div => div.style.display = 'none');
+      document.getElementById(id).style.display = 'block';
+    }
+
+    function agregarAlCarrito(nombre, precio) {
+      carrito.push({ nombre, precio });
+      localStorage.setItem('carrito', JSON.stringify(carrito));
+      actualizarCarrito();
+    }
+
+    function actualizarCarrito() {
+      const lista = document.getElementById('lista-carrito');
+      lista.innerHTML = '';
+      let total = 0;
+      carrito.forEach((item, index) => {
+        total += item.precio;
+        const li = document.createElement('li');
+        li.innerHTML = `${item.nombre} - $${item.precio.toFixed(2)}
+          <button class="remove-btn" onclick="eliminarDelCarrito(${index})">Quitar</button>`;
+        lista.appendChild(li);
+      });
+      document.getElementById('total').textContent = total.toFixed(2);
+    }
+
+    function eliminarDelCarrito(index) {
+      carrito.splice(index, 1);
+      localStorage.setItem('carrito', JSON.stringify(carrito));
+      actualizarCarrito();
+    }
+
+    function toggleCarrito() {
+      const carritoDiv = document.getElementById('carrito');
+      carritoDiv.classList.toggle('ocultar');
+    }
+
+    function finalizarCompra() {
+      alert("¡Gracias por tu compra! Total: $" + document.getElementById('total').textContent);
+      carrito = [];
+      localStorage.removeItem('carrito');
+      actualizarCarrito();
+    }
+
+    function abrirModal() {
+      document.getElementById('adminModal').classList.remove('ocultar');
+    }
+
+    function validarAcceso() {
+      const pass = document.getElementById('adminPass').value;
+      if (pass === "NDENTRAB") {
+        document.getElementById('adminModal').classList.add('ocultar');
+        document.getElementById('adminPanel').classList.remove('ocultar');
+      } else {
+        alert("Contraseña incorrecta");
+      }
+    }
+
+    // Inicializa el carrito si ya había algo guardado
+    document.addEventListener("DOMContentLoaded", actualizarCarrito);
+  </script>
+
 </body>
 </html>
+    </div>
+  </div>
