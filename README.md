@@ -290,7 +290,9 @@
       <li>Ticket promedio: $<span id="ticketPromedio">52.50</span></li>
     </ul>
   </div>
-
+<script>
+  console.log("Script cargado correctamente");
+</script>
   <script>
     let carrito = JSON.parse(localStorage.getItem('carrito')) || [];
 
