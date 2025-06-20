@@ -339,8 +339,8 @@
     }
 
     function abrirModal() {
-      document.getElementById('adminModal').classList.remove('ocultar');
-    }
+  document.getElementById('adminModal').classList.remove('ocultar');
+}
 
     function validarAcceso() {
       const pass = document.getElementById('adminPass').value;
