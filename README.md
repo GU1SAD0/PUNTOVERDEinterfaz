@@ -338,9 +338,11 @@
       actualizarCarrito();
     }
 
-    function abrirModal() {
-  document.getElementById('adminModal').classList.remove('ocultar');
-document.getElementById('adminModal').style.display = 'flex';
+function abrirModal() {
+  console.log("Modal abierto");
+  const modal = document.getElementById('adminModal');
+  modal.classList.remove('ocultar');
+  modal.style.display = 'flex';
 }
 function abrirModal() {
   console.log("Modal abierto");
