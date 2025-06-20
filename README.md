@@ -344,10 +344,7 @@ function abrirModal() {
   modal.classList.remove('ocultar');
   modal.style.display = 'flex';
 }
-function abrirModal() {
-  console.log("Modal abierto");
-  document.getElementById('adminModal').classList.remove('ocultar');
-}
+
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
     document.getElementById('adminModal').classList.add('ocultar');
