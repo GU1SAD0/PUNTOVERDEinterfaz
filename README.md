@@ -340,8 +340,18 @@
 
     function abrirModal() {
   document.getElementById('adminModal').classList.remove('ocultar');
+document.getElementById('adminModal').style.display = 'flex';
 }
-
+function abrirModal() {
+  console.log("Modal abierto");
+  document.getElementById('adminModal').classList.remove('ocultar');
+}
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    document.getElementById('adminModal').classList.add('ocultar');
+    document.getElementById('adminModal').style.display = 'none';
+  }
+});
     function validarAcceso() {
       const pass = document.getElementById('adminPass').value;
       if (pass === "NDENTRAB") {
