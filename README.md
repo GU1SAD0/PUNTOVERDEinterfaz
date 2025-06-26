@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
@@ -685,6 +685,31 @@
         transform: scale(1.2);
         cursor: pointer;
     }
+    
+    .modal-content .payment-options {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 1rem;
+        margin-bottom: 1.8rem;
+        text-align: left;
+    }
+
+    .modal-content .payment-options label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 1.1rem;
+        color: var(--texto-principal);
+        cursor: pointer;
+    }
+
+    .modal-content .payment-options input[type="radio"] {
+        width: auto;
+        margin-bottom: 0;
+        transform: scale(1.2);
+        cursor: pointer;
+    }
 
 
     .btn-modal {
@@ -1108,6 +1133,15 @@
         text-align: right;
         margin-top: 0.5rem;
     }
+    
+    .order-card .order-payment {
+        font-size: 0.95rem;
+        color: var(--texto-principal);
+        text-align: right;
+        margin-top: 0.2rem;
+        font-weight: 600;
+    }
+
 
     .btn-marcar-listo {
         background: linear-gradient(135deg, var(--exito-color) 0%, #388E3C 100%);
@@ -1186,6 +1220,81 @@
         }
     }
 
+    /* Nuevo: Modal de pago */
+    #paymentModal .modal-content {
+        max-width: 480px;
+    }
+
+    /* Nuevo: Modal de Recibo/Ticket */
+    #receiptModal .modal-content {
+        max-width: 550px;
+        text-align: left;
+    }
+    #receiptModal .modal-content h3 {
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+    #receiptModal .receipt-details {
+        font-size: 1.1rem;
+        line-height: 1.6;
+        margin-bottom: 1.5rem;
+        border-bottom: 1px dashed var(--borde-suave);
+        padding-bottom: 1.5rem;
+    }
+    #receiptModal .receipt-details strong {
+        color: var(--verde-oscuro);
+    }
+    #receiptModal .receipt-items {
+        list-style: none;
+        padding: 0;
+        margin-bottom: 1.5rem;
+    }
+    #receiptModal .receipt-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+        border-bottom: 1px dotted var(--borde-suave);
+    }
+    #receiptModal .receipt-item:last-child {
+        border-bottom: none;
+    }
+    #receiptModal .receipt-item-name {
+        flex-grow: 1;
+        color: var(--texto-principal);
+    }
+    #receiptModal .receipt-item-price {
+        font-weight: 600;
+        color: var(--verde-principal);
+    }
+    #receiptModal .receipt-total {
+        text-align: right;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--verde-principal);
+        margin-top: 1rem;
+    }
+    /* Eliminado el botón de imprimir, por lo tanto, no es necesario este estilo */
+    /*
+    #receiptModal .btn-print {
+        width: 100%;
+        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+        color: white;
+        border: none;
+        padding: 15px;
+        border-radius: 10px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        margin-top: 2rem;
+    }
+    #receiptModal .btn-print:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+    }
+    */
+
   </style>
 </head>
 <body>
@@ -1202,7 +1311,7 @@
 
   <!-- Contenedores de productos por categoría -->
   <!-- Cada div 'contenido-categoria' se llenará dinámicamente con productos -->
-  <div id="promos" class="contenido-categoria">
+  <div id="promos" class="contenido-categoria main-view">
     <div class="categoria-header">
       <h2>🎉 Promociones Especiales</h2>
       <p>Combos perfectos para ahorrar y disfrutar</p>
@@ -1210,7 +1319,7 @@
     <div class="scroll-productos"></div>
   </div>
 
-  <div id="bebidas" class="contenido-categoria">
+  <div id="bebidas" class="contenido-categoria main-view">
     <div class="categoria-header">
       <h2>🥤 Bebidas Naturales</h2>
       <p>Aguas frescas preparadas diariamente con frutas naturales</p>
@@ -1218,7 +1327,7 @@
     <div class="scroll-productos"></div>
   </div>
 
-  <div id="alimentos" class="contenido-categoria">
+  <div id="alimentos" class="contenido-categoria main-view">
     <div class="categoria-header">
       <h2>🥪 Alimentos Saludables</h2>
       <p>Opciones nutritivas preparadas con ingredientes frescos del día</p>
@@ -1239,7 +1348,7 @@
       <div id="carrito-items"></div>
       <div class="carrito-total">
         <div class="total-precio">Total: $<span id="total">0.00</span></div>
-        <button class="btn-finalizar" onclick="iniciarFinalizarCompra()">
+        <button class="btn-finalizar" onclick="iniciarProcesoDePago()">
           Finalizar Compra
         </button>
       </div>
@@ -1252,7 +1361,7 @@
     <span class="carrito-badge" id="carritoBadge">0</span>
   </button>
 
-  <button class="admin-button" onclick="abrirModal('adminModal')">⚙️ Acceso Personal</button>
+  <button class="admin-button" onclick="mostrarVista('admin')">⚙️ Acceso Personal</button>
 
   <!-- Toggle modo oscuro -->
   <button class="toggle-dark-mode" onclick="toggleModoOscuro()" id="btnModoOscuro">
@@ -1274,7 +1383,7 @@
 
   <!-- Panel de administración -->
   <div id="adminPanel" class="oculto">
-    <button class="btn-cerrar-admin" onclick="cerrarAdmin()">✕</button>
+    <button class="btn-cerrar-admin" onclick="mostrarVista('usuario')">✕</button>
     <div class="admin-header">
       <h2>📊 Panel de Administración</h2>
       <p>Gestiona tu negocio y revisa las estadísticas e inventario</p>
@@ -1330,7 +1439,7 @@
         <button class="btn-action editar" onclick="mostrarGestionCategorias()">
           🗂️ Gestión de Categorías
         </button>
-        <button class="btn-action" onclick="mostrarPantallaCocina()">
+        <button class="btn-action" onclick="mostrarVista('cocina')">
           👩‍🍳 Pedidos en Cocina
         </button>
       </div>
@@ -1410,20 +1519,6 @@
     </div>
   </div>
 
-  <!-- Nuevo Modal para Nombre del Pedido -->
-  <div id="nombrePedidoModal" class="modal oculto">
-    <div class="modal-content">
-      <button class="btn-cerrar-modal-general" onclick="cerrarModal('nombrePedidoModal')">✕</button>
-      <h3>¿Quién Recoge el Pedido?</h3>
-      <p>Por favor, ingresa tu nombre o un apodo para llamarte cuando tu pedido esté listo.</p>
-      <input type="text" id="nombreClienteInput" placeholder="Tu nombre o apodo" />
-      <div class="modal-buttons">
-        <button class="btn-modal btn-entrar" onclick="confirmarPedidoConNombre()">Confirmar Pedido</button>
-        <button class="btn-modal btn-cancelar" onclick="cerrarModal('nombrePedidoModal')">Cancelar</button>
-      </div>
-    </div>
-  </div>
-
   <!-- Nuevo Modal para Selección de Aderezo -->
   <div id="aderezoModal" class="modal oculto">
     <div class="modal-content">
@@ -1442,9 +1537,64 @@
     </div>
   </div>
 
+  <!-- NUEVO: Modal para Detalles de Pago -->
+  <div id="paymentModal" class="modal oculto">
+    <div class="modal-content">
+      <button class="btn-cerrar-modal-general" onclick="cerrarModal('paymentModal')">✕</button>
+      <h3>Detalles del Pago y Cliente</h3>
+      <input type="text" id="clienteNombreInput" placeholder="Nombre del Cliente (Ej: Juan)" />
+      <p style="margin-top: 1rem; color: var(--texto-principal);">Método de Pago:</p>
+      <div class="payment-options">
+        <label><input type="radio" name="paymentMethod" value="Efectivo" checked> Efectivo</label>
+        <label><input type="radio" name="paymentMethod" value="Tarjeta"> Tarjeta</label>
+      </div>
+      <div class="modal-buttons">
+        <button class="btn-modal btn-entrar" onclick="confirmarPago()">Confirmar Pago</button>
+        <button class="btn-modal btn-cancelar" onclick="cerrarModal('paymentModal')">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- NUEVO: Modal de Recibo/Ticket -->
+  <div id="receiptModal" class="modal oculto">
+    <div class="modal-content">
+      <button class="btn-cerrar-modal-general" onclick="cerrarModal('receiptModal')">✕</button>
+      <h3>✅ Pedido Confirmado - ¡Listo!</h3>
+      <p style="text-align: center; color: var(--texto-secundario); margin-bottom: 2rem;">Gracias por tu compra.</p>
+      <div class="receipt-details">
+        <p><strong>Cliente:</strong> <span id="receiptClienteNombre"></span></p>
+        <p><strong>Fecha:</strong> <span id="receiptFecha"></span></p>
+        <p><strong>Hora:</strong> <span id="receiptHora"></span></p>
+        <p><strong>Método de Pago:</strong> <span id="receiptMetodoPago"></span></p>
+      </div>
+      <h4>Detalle del Pedido:</h4>
+      <ul class="receipt-items" id="receiptItemsList">
+        <!-- Items del pedido se insertarán aquí -->
+      </ul>
+      <div class="receipt-total">Total: $<span id="receiptTotal">0.00</span></div>
+      <!-- BOTÓN DE IMPRIMIR ELIMINADO -->
+    </div>
+  </div>
+
+  <!-- NUEVO: Modal para confirmar pedido listo en cocina -->
+  <div id="confirmarPedidoListoModal" class="modal oculto">
+    <div class="modal-content">
+      <button class="btn-cerrar-modal-general" onclick="cancelarPedidoListoAccion()">✕</button>
+      <h3>¿Confirmar Pedido Listo?</h3>
+      <p>Estás a punto de marcar como listo el pedido para:</p>
+      <p style="font-weight: 700; font-size: 1.2rem; color: var(--verde-oscuro); margin-top: 0.5rem;" id="confirmarPedidoCliente"></p>
+      <p style="margin-top: 1rem; margin-bottom: 2rem;">¿Estás seguro de que este pedido está listo para ser entregado?</p>
+      <div class="modal-buttons">
+        <button class="btn-modal btn-entrar" onclick="confirmarPedidoListoAccion()">Sí, Listo</button>
+        <button class="btn-modal btn-cancelar" onclick="cancelarPedidoListoAccion()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+
   <!-- NUEVO: Panel de Pedidos en Cocina -->
   <div id="kitchenOrdersPanel" class="oculto">
-    <button class="btn-cerrar-kitchen" onclick="cerrarPantallaCocina()">✕</button>
+    <button class="btn-cerrar-kitchen" onclick="mostrarVista('admin')">✕</button>
     <div class="kitchen-header">
       <h2>🍳 Pedidos en Cocina</h2>
       <p>Aquí puedes ver los pedidos pendientes y marcarlos como listos.</p>
@@ -1460,159 +1610,221 @@
   </div>
 
 
-<script>
+<script type="module">
 // =====================================
-// VARIABLES GLOBALES Y CONFIGURACIÓN
+// CONFIGURACIÓN DE FIREBASE E INICIALIZACIÓN
+// =====================================
+
+// Importa las funciones necesarias de los SDKs de Firebase
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, doc, getDoc, setDoc, deleteDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+// TU CONFIGURACIÓN DE FIREBASE PROPORCIONADA
+const firebaseConfig = {
+  apiKey: "AIzaSyBMR1kXCO2xlFkPFaBby-GTUuN7umkSaJQ",
+  authDomain: "mipos-e5430.firebaseapp.com",
+  projectId: "mipos-e5430",
+  storageBucket: "mipos-e5430.firebasestorage.app",
+  messagingSenderId: "1092023571594",
+  appId: "1:1092023571594:web:318f7af08e0844d1294973"
+};
+
+// Inicializa Firebase
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// =====================================
+// VARIABLES GLOBALES (AHORA CARGADAS DESDE/HACIA FIREBASE)
 // =====================================
 
 // Datos de ventas por día (YYYY-MM-DD) para estadísticas semanales/mensuales
-let ventasDiarias;
-try {
-    ventasDiarias = JSON.parse(localStorage.getItem('ventasDiarias')) || {};
-    if (typeof ventasDiarias !== 'object' || ventasDiarias === null) { // Valida que sea un objeto
-        console.warn("Datos de ventasDiarias en localStorage corruptos o inválidos, inicializando como vacío.");
-        ventasDiarias = {};
-    }
-} catch (e) {
-    console.error("Error al parsear 'ventasDiarias' de localStorage:", e);
-    ventasDiarias = {};
-}
+// Se cargarán desde Firebase
+let ventasDiarias = {};
 
-// Carrito de compras actual
-let carrito;
-try {
-    carrito = JSON.parse(localStorage.getItem('carrito')) || [];
-    if (!Array.isArray(carrito)) { // Valida que sea un array
-        console.warn("Datos de carrito en localStorage corruptos o inválidos, inicializando como vacío.");
-        carrito = [];
-    }
-} catch (e) {
-    console.error("Error al parsear 'carrito' de localStorage:", e);
-    carrito = [];
-}
+// Carrito de compras actual (local al cliente)
+let carrito = [];
 
-// NUEVO: Array para almacenar pedidos pendientes para la cocina
-let pedidosPendientes;
-try {
-    pedidosPendientes = JSON.parse(localStorage.getItem('pedidosPendientes')) || [];
-    if (!Array.isArray(pedidosPendientes)) { // Valida que sea un array
-        console.warn("Datos de pedidosPendientes en localStorage corruptos o inválidos, inicializando como vacío.");
-        pedidosPendientes = [];
-    }
-} catch (e) {
-    console.error("Error al parsear 'pedidosPendientes' de localStorage:", e);
-    pedidosPendientes = [];
-}
+// Array para almacenar pedidos pendientes para la cocina (sincronizados con Firebase)
+let pedidosPendientes = [];
 
 // Definición de categorías con sus propiedades (icono, nombre, imagen de fondo)
-let categorias;
-try {
-    categorias = JSON.parse(localStorage.getItem('categorias')) || {
-        'promos': { nombre: 'Promociones', icono: '🎉', imageUrl: 'https://placehold.co/280x180/7BAE7F/5a8a5e?text=Promociones' },
-        'bebidas': { nombre: 'Bebidas', icono: '🥤', imageUrl: 'https://placehold.co/280x180/7BAE7F/5a8a5e?text=Bebidas' },
-        'alimentos': { nombre: 'Alimentos', icono: '🥪', imageUrl: 'https://placehold.co/280x180/7BAE7F/5a8a5e?text=Alimentos' }
-    };
-    if (typeof categorias !== 'object' || categorias === null) {
-        console.warn("Datos de categorias en localStorage corruptos o inválidos, inicializando con valores por defecto.");
-        categorias = {
-            'promos': { nombre: 'Promociones', icono: '🎉', imageUrl: 'https://placehold.co/280x180/7BAE7F/5a8a5e?text=Promociones' },
-            'bebidas': { nombre: 'Bebidas', icono: '🥤', imageUrl: 'https://placehold.co/280x180/7BAE7F/5a8a5e?text=Bebidas' },
-            'alimentos': { nombre: 'Alimentos', icono: '🥪', imageUrl: 'https://placehold.co/280x180/7BAE7F/5a8a5e?text=Alimentos' }
-        };
-    }
-} catch (e) {
-    console.error("Error al parsear 'categorias' de localStorage:", e);
-    categorias = {
-        'promos': { nombre: 'Promociones', icono: '🎉', imageUrl: 'https://placehold.co/280x180/7BAE7F/5a8a5e?text=Promociones' },
-        'bebidas': { nombre: 'Bebidas', icono: '🥤', imageUrl: 'https://placehold.co/280x180/7BAE7F/5a8a5e?text=Bebidas' },
-        'alimentos': { nombre: 'Alimentos', icono: '🥪', imageUrl: 'https://placehold.co/280x180/7BAE7F/5a8a5e?text=Alimentos' }
-    };
-}
-
+// Se cargarán desde Firebase
+let categorias = {};
 
 // Productos con precios y stock editables, y si requieren aderezo.
-let productos;
-try {
-    productos = JSON.parse(localStorage.getItem('productos')) || {
-        'Combo Wrap + Agua': { precio: 65, stock: 10, categoria: 'promos', descripcion: 'Delicioso wrap de pollo con vegetales frescos + agua natural de tu sabor favorito', requiresDressing: true },
-        'Combo Baguette + Bebida': { precio: 55, stock: 8, categoria: 'promos', descripcion: 'Baguette artesanal recién horneada + agua de fruta natural', requiresDressing: true },
-        'Combo Estudiante': { precio: 45, stock: 12, categoria: 'promos', descripcion: 'Cuernito de jamón + agua natural + fruta de temporada', requiresDressing: false },
-        'Agua de Maracuyá': { precio: 20, stock: 50, categoria: 'bebidas', descripcion: 'Refrescante agua de maracuyá natural, perfecta para cualquier momento', requiresDressing: false },
-        'Agua de Ciruela': { precio: 20, stock: 45, categoria: 'bebidas', descripcion: 'Agua fresca de ciruela con el toque perfecto de dulzura natural', requiresDressing: false },
-        'Agua de Guanábana': { precio: 22, stock: 30, categoria: 'bebidas', descripcion: 'Exótica agua de guanábana con su sabor único y refrescante', requiresDressing: false },
-        'Agua Natural': { precio: 15, stock: 100, categoria: 'bebidas', descripcion: 'Agua purificada embotellada, ideal para acompañar tus alimentos', requiresDressing: false },
-        'Baguette de Pollo': { precio: 40, stock: 20, categoria: 'alimentos', descripcion: 'Pan baguette artesanal con pechuga de pollo, lechuga, tomate y aderezo especial', requiresDressing: true },
-        'Baguette Vegetariana': { precio: 38, stock: 18, categoria: 'alimentos', descripcion: 'Pan baguette con aguacate, espinacas, tomate, pepino y aderezo vegano', requiresDressing: true },
-        'Wrap de Pollo': { precio: 42, stock: 25, categoria: 'alimentos', descripcion: 'Tortilla integral con pollo, vegetales frescos y salsa especial', requiresDressing: true },
-        'Cuernito de Jamón': { precio: 35, stock: 30, categoria: 'alimentos', descripcion: 'Delicioso cuernito con jamón de pavo, queso y vegetales', requiresDressing: true },
-        'Ensalada Verde': { precio: 32, stock: 15, categoria: 'alimentos', descripcion: 'Mix de lechugas, espinacas, tomate cherry, pepino y aderezo', requiresDressing: false }
-    };
-    if (typeof productos !== 'object' || productos === null) {
-        console.warn("Datos de productos en localStorage corruptos o inválidos, inicializando con valores por defecto.");
-        productos = {
-            'Combo Wrap + Agua': { precio: 65, stock: 10, categoria: 'promos', descripcion: 'Delicioso wrap de pollo con vegetales frescos + agua natural de tu sabor favorito', requiresDressing: true },
-            'Combo Baguette + Bebida': { precio: 55, stock: 8, categoria: 'promos', descripcion: 'Baguette artesanal recién horneada + agua de fruta natural', requiresDressing: true },
-            'Combo Estudiante': { precio: 45, stock: 12, categoria: 'promos', descripcion: 'Cuernito de jamón + agua natural + fruta de temporada', requiresDressing: false },
-            'Agua de Maracuyá': { precio: 20, stock: 50, categoria: 'bebidas', descripcion: 'Refrescante agua de maracuyá natural, perfecta para cualquier momento', requiresDressing: false },
-            'Agua de Ciruela': { precio: 20, stock: 45, categoria: 'bebidas', descripcion: 'Agua fresca de ciruela con el toque perfecto de dulzura natural', requiresDressing: false },
-            'Agua de Guanábana': { precio: 22, stock: 30, categoria: 'bebidas', descripcion: 'Exótica agua de guanábana con su sabor único y refrescante', requiresDressing: false },
-            'Agua Natural': { precio: 15, stock: 100, categoria: 'bebidas', descripcion: 'Agua purificada embotellada, ideal para acompañar tus alimentos', requiresDressing: false },
-            'Baguette de Pollo': { precio: 40, stock: 20, categoria: 'alimentos', descripcion: 'Pan baguette artesanal con pechuga de pollo, lechuga, tomate y aderezo especial', requiresDressing: true },
-            'Baguette Vegetariana': { precio: 38, stock: 18, categoria: 'alimentos', descripcion: 'Pan baguette con aguacate, espinacas, tomate, pepino y aderezo vegano', requiresDressing: true },
-            'Wrap de Pollo': { precio: 42, stock: 25, categoria: 'alimentos', descripcion: 'Tortilla integral con pollo, vegetales frescos y salsa especial', requiresDressing: true },
-            'Cuernito de Jamón': { precio: 35, stock: 30, categoria: 'alimentos', descripcion: 'Delicioso cuernito con jamón de pavo, queso y vegetales', requiresDressing: true },
-            'Ensalada Verde': { precio: 32, stock: 15, categoria: 'alimentos', descripcion: 'Mix de lechugas, espinacas, tomate cherry, pepino y aderezo', requiresDressing: false }
-        };
-    }
-} catch (e) {
-    console.error("Error al parsear 'productos' de localStorage:", e);
-    productos = {
-        'Combo Wrap + Agua': { precio: 65, stock: 10, categoria: 'promos', descripcion: 'Delicioso wrap de pollo con vegetales frescos + agua natural de tu sabor favorito', requiresDressing: true },
-        'Combo Baguette + Bebida': { precio: 55, stock: 8, categoria: 'promos', descripcion: 'Baguette artesanal recién horneada + agua de fruta natural', requiresDressing: true },
-        'Combo Estudiante': { precio: 45, stock: 12, categoria: 'promos', descripcion: 'Cuernito de jamón + agua natural + fruta de temporada', requiresDressing: false },
-        'Agua de Maracuyá': { precio: 20, stock: 50, categoria: 'bebidas', descripcion: 'Refrescante agua de maracuyá natural, perfecta para cualquier momento', requiresDressing: false },
-        'Agua de Ciruela': { precio: 20, stock: 45, categoria: 'bebidas', descripcion: 'Agua fresca de ciruela con el toque perfecto de dulzura natural', requiresDressing: false },
-        'Agua de Guanábana': { precio: 22, stock: 30, categoria: 'bebidas', descripcion: 'Exótica agua de guanábana con su sabor único y refrescante', requiresDressing: false },
-        'Agua Natural': { precio: 15, stock: 100, categoria: 'bebidas', descripcion: 'Agua purificada embotellada, ideal para acompañar tus alimentos', requiresDressing: false },
-        'Baguette de Pollo': { precio: 40, stock: 20, categoria: 'alimentos', descripcion: 'Pan baguette artesanal con pechuga de pollo, lechuga, tomate y aderezo especial', requiresDressing: true },
-        'Baguette Vegetariana': { precio: 38, stock: 18, categoria: 'alimentos', descripcion: 'Pan baguette con aguacate, espinacas, tomate, pepino y aderezo vegano', requiresDressing: true },
-        'Wrap de Pollo': { precio: 42, stock: 25, categoria: 'alimentos', descripcion: 'Tortilla integral con pollo, vegetales frescos y salsa especial', requiresDressing: true },
-        'Cuernito de Jamón': { precio: 35, stock: 30, categoria: 'alimentos', descripcion: 'Delicioso cuernito con jamón de pavo, queso y vegetales', requiresDressing: true },
-        'Ensalada Verde': { precio: 32, stock: 15, categoria: 'alimentos', descripcion: 'Mix de lechugas, espinacas, tomate cherry, pepino y aderezo', requiresDressing: false }
-    };
-}
+// Se cargarán desde Firebase
+let productos = {};
 
+// Default data (used if Firebase is empty)
+const DEFAULT_CATEGORIES = {
+  'promos': { nombre: 'Promociones', icono: '🎉', imageUrl: 'https://placehold.co/280x180/7BAE7F/5a8a5e?text=Promociones' },
+  'bebidas': { nombre: 'Bebidas', icono: '🥤', imageUrl: 'https://placehold.co/280x180/7BAE7F/5a8a5e?text=Bebidas' },
+  'alimentos': { nombre: 'Alimentos', icono: '🥪', imageUrl: 'https://placehold.co/280x180/7BAE7F/5a8a5e?text=Alimentos' }
+};
+
+const DEFAULT_PRODUCTS = {
+  'Combo Wrap + Agua': { precio: 65, stock: 10, categoria: 'promos', descripcion: 'Delicioso wrap de pollo con vegetales frescos + agua natural de tu sabor favorito', requiresDressing: true },
+  'Combo Baguette + Bebida': { precio: 55, stock: 8, categoria: 'promos', descripcion: 'Baguette artesanal recién horneada + agua de fruta natural', requiresDressing: true },
+  'Combo Estudiante': { precio: 45, stock: 12, categoria: 'promos', descripcion: 'Cuernito de jamón + agua natural + fruta de temporada', requiresDressing: false },
+  'Agua de Maracuyá': { precio: 20, stock: 50, categoria: 'bebidas', descripcion: 'Refrescante agua de maracuyá natural, perfecta para cualquier momento', requiresDressing: false },
+  'Agua de Ciruela': { precio: 20, stock: 45, categoria: 'bebidas', descripcion: 'Agua fresca de ciruela con el toque perfecto de dulzura natural', requiresDressing: false },
+  'Agua de Guanábana': { precio: 22, stock: 30, categoria: 'bebidas', descripcion: 'Exótica agua de guanábana con su sabor único y refrescante', requiresDressing: false },
+  'Agua Natural': { precio: 15, stock: 100, categoria: 'bebidas', descripcion: 'Agua purificada embotellada, ideal para acompañar tus alimentos', requiresDressing: false },
+  'Baguette de Pollo': { precio: 40, stock: 20, categoria: 'alimentos', descripcion: 'Pan baguette artesanal con pechuga de pollo, lechuga, tomate y aderezo especial', requiresDressing: true },
+  'Baguette Vegetariana': { precio: 38, stock: 18, categoria: 'alimentos', descripcion: 'Pan baguette con aguacate, espinacas, tomate, pepino y aderezo vegano', requiresDressing: true },
+  'Wrap de Pollo': { precio: 42, stock: 25, categoria: 'alimentos', descripcion: 'Tortilla integral con pollo, vegetales frescos y salsa especial', requiresDressing: true },
+  'Cuernito de Jamón': { precio: 35, stock: 30, categoria: 'alimentos', descripcion: 'Delicioso cuernito con jamón de pavo, queso y vegetales', requiresDressing: true },
+  'Ensalada Verde': { precio: 32, stock: 15, categoria: 'alimentos', descripcion: 'Mix de lechugas, espinacas, tomate cherry, pepino y aderezo', requiresDressing: false }
+};
 
 const ADMIN_PASSWORD = "NDENTRAB";
 
-// Configuración de modo oscuro (true/false)
+// Configuración de modo oscuro (true/false) - Sigue en localStorage
 let modoOscuro;
 try {
     modoOscuro = localStorage.getItem('modoOscuro') === 'true' || 
                  (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
-    // Asegurarse de que modoOscuro sea booleano
-    if (typeof modoOscuro !== 'boolean') {
-        modoOscuro = false;
-    }
+    if (typeof modoOscuro !== 'boolean') { modoOscuro = false; }
 } catch (e) {
     console.error("Error al leer 'modoOscuro' de localStorage:", e);
     modoOscuro = false;
 }
 
 // Variables para el flujo de aderezos y productos
-let productoSeleccionadoParaAderezo = null; // Guarda el nombre del producto que espera la selección de aderezo
+let productoSeleccionadoParaAderezo = null;
+let currentOrderIdToConfirm = null; // Para confirmar pedidos listos en cocina
+
+let unsubscribeKitchenListener = null; // Para almacenar la función para desuscribirse del listener de cocina
+
+// =====================================
+// HELPERS PARA LOCALSTORAGE (AHORA SOLO PARA SETTINGS PEQUEÑOS)
+// =====================================
+
+// Helper para guardar configuraciones pequeñas en localStorage
+function setSetting(key, value) {
+    try {
+        localStorage.setItem(key, JSON.stringify(value));
+    } catch (e) {
+        console.error(`Error al guardar '${key}' en localStorage:`, e);
+        mostrarNotificacion(`Error al guardar configuración (${key}). Intenta de nuevo.`, 'error');
+    }
+}
+
+// Helper para obtener configuraciones pequeñas de localStorage
+function getSetting(key, defaultValue) {
+    try {
+        const item = localStorage.getItem(key);
+        return item ? JSON.parse(item) : defaultValue;
+    } catch (e) {
+        console.error(`Error al parsear '${key}' de localStorage:`, e);
+        return defaultValue;
+    }
+}
+
+// =====================================
+// FUNCIONES DE FIREBASE (Carga y Guardado de Datos Principales)
+// =====================================
+
+async function cargarDatosIniciales() {
+  try {
+    // --- Cargar Productos ---
+    const productosRef = doc(db, 'appData', 'productos');
+    const productosSnap = await getDoc(productosRef);
+    if (productosSnap.exists()) {
+      productos = productosSnap.data(); // Carga el objeto completo
+      console.log("Productos cargados desde Firebase.");
+    } else {
+      console.log("No se encontraron productos en Firebase. Inicializando con valores por defecto.");
+      productos = DEFAULT_PRODUCTS;
+      await guardarProductosEnFirebase(); // Sube los productos por defecto a Firebase
+    }
+
+    // --- Cargar Categorías ---
+    const categoriasRef = doc(db, 'appData', 'categorias');
+    const categoriasSnap = await getDoc(categoriasRef);
+    if (categoriasSnap.exists()) {
+      categorias = categoriasSnap.data(); // Carga el objeto completo
+      console.log("Categorías cargadas desde Firebase.");
+    } else {
+      console.log("No se encontraron categorías en Firebase. Inicializando con valores por defecto.");
+      categorias = DEFAULT_CATEGORIES;
+      await guardarCategoriasEnFirebase(); // Sube las categorías por defecto a Firebase
+    }
+    
+    // --- Cargar Ventas Diarias ---
+    // Como las ventas diarias son dinámicas por fecha, no las cargamos todas de golpe al inicio.
+    // Se cargarán cuando se necesiten para las estadísticas.
+    // Solo cargamos los datos recientes para el cálculo de estadísticas.
+    console.log("Ventas Diarias serán cargadas al actualizar estadísticas.");
+
+  } catch (e) {
+    console.error("Error al cargar datos iniciales de Firebase:", e);
+    mostrarNotificacion("Error al cargar datos del servidor. Usando datos locales.", 'error');
+    // Fallback si Firebase falla (aunque ahora no tenemos localStorage de fallback para estos datos)
+    // En un escenario real, aquí se podría cargar una copia de respaldo local si existiera.
+  }
+}
+
+async function guardarProductosEnFirebase() {
+  try {
+    await setDoc(doc(db, 'appData', 'productos'), productos);
+    console.log("Productos guardados en Firebase.");
+  } catch (e) {
+    console.error("Error al guardar productos en Firebase:", e);
+    mostrarNotificacion("Error al guardar productos. Verifica tu conexión.", 'error');
+  }
+}
+
+async function guardarCategoriasEnFirebase() {
+  try {
+    await setDoc(doc(db, 'appData', 'categorias'), categorias);
+    console.log("Categorías guardadas en Firebase.");
+  } catch (e) {
+    console.error("Error al guardar categorías en Firebase:", e);
+    mostrarNotificacion("Error al guardar categorías. Verifica tu conexión.", 'error');
+  }
+}
+
+async function guardarVentasDiariasEnFirebase(fecha, data) {
+  try {
+    await setDoc(doc(db, 'ventasDiarias', fecha), data, { merge: true }); // Usamos merge para actualizar si ya existe
+    console.log(`Ventas diarias para ${fecha} guardadas en Firebase.`);
+  } catch (e) {
+    console.error("Error al guardar ventas diarias en Firebase:", e);
+    mostrarNotificacion("Error al guardar ventas. Verifica tu conexión.", 'error');
+  }
+}
+
+async function obtenerVentasDiariasDeFirebase(fecha) {
+    try {
+        const docRef = doc(db, 'ventasDiarias', fecha);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+            return docSnap.data();
+        } else {
+            return { totalVentas: 0, numeroTickets: 0, productosVendidos: {}, promocionesVendidas: {} };
+        }
+    } catch (e) {
+        console.error(`Error al obtener ventas diarias de Firebase para ${fecha}:`, e);
+        mostrarNotificacion(`Error al obtener ventas para ${fecha}.`, 'error');
+        return { totalVentas: 0, numeroTickets: 0, productosVendidos: {}, promocionesVendidas: {} };
+    }
+}
+
 
 // =====================================
 // FUNCIONES DE INICIALIZACIÓN
 // =====================================
 
 // Se ejecuta cuando el DOM está completamente cargado
-document.addEventListener('DOMContentLoaded', function() {
-  inicializarApp();
+document.addEventListener('DOMContentLoaded', async function() {
+  await inicializarApp();
 });
 
 // Función principal de inicialización de la aplicación
-function inicializarApp() {
+async function inicializarApp() {
+  await cargarDatosIniciales(); // Primero carga los datos de Firebase
+  
   cargarCategoriasEnDOM(); // Carga las categorías en el carrusel principal
   cargarProductosEnDOM(); // Carga los productos dentro de sus respectivas categorías
   actualizarCarrito(); // Actualiza la vista del carrito
@@ -1623,9 +1835,8 @@ function inicializarApp() {
   if (window.matchMedia) {
     window.mediaQuery = window.matchMedia('(prefers-color-scheme: dark)'); // Guarda la media query
     window.mediaQuery.addEventListener('change', function(e) {
-      // Solo actualiza si el usuario no ha establecido manualmente una preferencia
       try {
-        if (localStorage.getItem('modoOscuroManual') === null) {
+        if (getSetting('modoOscuroManual') === null) { // Si el usuario no ha puesto modo manual
           modoOscuro = e.matches;
           aplicarModoOscuro();
         }
@@ -1634,9 +1845,80 @@ function inicializarApp() {
       }
     });
   }
-  // Muestra la primera categoría por defecto al cargar la página
-  mostrarCategoria(Object.keys(categorias)[0] || 'promos'); 
+
+  // Persistencia de la vista: Muestra la última sección activa o la de usuario por defecto
+  const ultimaVista = getSetting('ultimaVista', 'usuario'); // 'usuario' es la vista por defecto
+  mostrarVista(ultimaVista);
+  
+  // Si la última vista era la de cocina, iniciamos el listener
+  if (ultimaVista === 'cocina') {
+    escucharPedidosDeCocina();
+  }
 }
+
+// =====================================
+// CONTROL DE VISTAS (User, Admin, Kitchen)
+// =====================================
+
+// Controla qué sección de la aplicación está visible
+function mostrarVista(vista) {
+    // Oculta todas las secciones principales
+    document.querySelector('header').classList.add('oculto');
+    document.querySelector('.categorias-container').classList.add('oculto');
+    document.querySelectorAll('.contenido-categoria').forEach(div => div.classList.add('oculto'));
+    document.getElementById('btnCarrito').classList.add('oculto');
+    document.querySelector('.admin-button').classList.add('oculto');
+    document.getElementById('btnModoOscuro').classList.add('oculto');
+    document.getElementById('adminPanel').classList.add('oculto');
+    document.getElementById('kitchenOrdersPanel').classList.add('oculto');
+
+    // Cierra cualquier modal abierto
+    cerrarTodasLasVentanas();
+
+    // Desuscribe el listener de cocina si estaba activo
+    if (unsubscribeKitchenListener) {
+      unsubscribeKitchenListener();
+      unsubscribeKitchenListener = null;
+      console.log("Listener de cocina desuscrito.");
+    }
+
+    // Muestra la sección solicitada
+    switch (vista) {
+        case 'usuario':
+            document.querySelector('header').classList.remove('oculto');
+            document.querySelector('.categorias-container').classList.remove('oculto');
+            document.getElementById('btnCarrito').classList.remove('oculto');
+            document.querySelector('.admin-button').classList.remove('oculto');
+            document.getElementById('btnModoOscuro').classList.remove('oculto');
+            // Muestra la categoría activa o la primera por defecto
+            const categoriaActiva = document.querySelector('.card-categoria.activa');
+            if (categoriaActiva) {
+                mostrarCategoria(categoriaActiva.dataset.categoria);
+            } else {
+                mostrarCategoria(Object.keys(categorias)[0] || 'promos'); // Fallback a la primera categoría
+            }
+            break;
+        case 'admin':
+            document.getElementById('adminPanel').classList.remove('oculto');
+            document.querySelector('.admin-button').classList.remove('oculto'); // Mantener visible para salir
+            document.getElementById('btnModoOscuro').classList.remove('oculto'); // Mantener visible
+            actualizarEstadisticas();
+            break;
+        case 'cocina':
+            document.getElementById('kitchenOrdersPanel').classList.remove('oculto');
+            document.querySelector('.admin-button').classList.remove('oculto'); // Mantener visible para salir
+            document.getElementById('btnModoOscuro').classList.remove('oculto'); // Mantener visible
+            escucharPedidosDeCocina(); // Inicia el listener en tiempo real
+            break;
+        default:
+            // Por si acaso, vuelve a la vista de usuario
+            mostrarVista('usuario');
+            break;
+    }
+    // Guarda la vista actual en localStorage
+    setSetting('ultimaVista', vista);
+}
+
 
 // =====================================
 // FUNCIONES DE CATEGORÍAS Y PRODUCTOS
@@ -1713,12 +1995,11 @@ function cargarProductosEnDOM() {
 // Muestra el contenido de una categoría específica y actualiza la tarjeta activa
 function mostrarCategoria(id) {
   // Oculta todas las secciones de contenido de categorías
-  document.querySelectorAll('.contenido-categoria').forEach(div => {
+  document.querySelectorAll('.contenido-categoria.main-view').forEach(div => {
     div.classList.add('oculto');
-    // Asegurarse de que los contenedores de productos internos también se reseteen su display
     const scrollProductosDiv = div.querySelector('.scroll-productos');
     if (scrollProductosDiv) {
-        scrollProductosDiv.style.display = ''; // Remover estilo inline para que CSS controle
+        scrollProductosDiv.style.display = '';
     }
   });
   
@@ -1731,22 +2012,18 @@ function mostrarCategoria(id) {
   const categoriaSeleccionada = document.getElementById(id);
   if (categoriaSeleccionada) {
     categoriaSeleccionada.classList.remove('oculto');
-    // Aseguramos que el contenedor de productos dentro de la categoría tenga display: flex;
-    // Esto es crucial para que los productos se muestren correctamente.
     const scrollProductosDiv = categoriaSeleccionada.querySelector('.scroll-productos');
     if (scrollProductosDiv) {
-        scrollProductosDiv.style.display = 'flex'; // Forzar display flex
+        scrollProductosDiv.style.display = 'flex';
     }
   } else {
-    // Si la categoría no existe (ej. fue eliminada), muestra la primera por defecto
     mostrarNotificacion(`Categoría "${id}" no encontrada. Mostrando la primera categoría disponible.`, 'warning');
     const primeraCategoriaId = Object.keys(categorias)[0];
     if (primeraCategoriaId) {
         mostrarCategoria(primeraCategoriaId);
     } else {
-        // No hay categorías, quizás mostrar un mensaje general o mantener la vista de categorías vacía
         console.warn("No hay categorías disponibles para mostrar.");
-        document.querySelector('.categorias-container').classList.remove('oculto'); // Asegura que el carrusel de categorías sea visible
+        document.querySelector('.categorias-container').classList.remove('oculto');
         document.querySelector('.categorias-scroll').innerHTML = '<p style="text-align: center; width: 100%; color: var(--texto-secundario); padding: 20px;">No hay categorías disponibles.</p>';
     }
     return;
@@ -1764,8 +2041,11 @@ function mostrarCategoria(id) {
 // =====================================
 
 // Maneja el flujo para agregar un producto al carrito (incluyendo selección de aderezo)
-function manejarAgregarAlCarrito(nombreProducto) {
+async function manejarAgregarAlCarrito(nombreProducto) {
   // Verifica si el producto existe y tiene stock disponible
+  // Re-cargamos productos para asegurar el stock más reciente
+  await cargarDatosIniciales(); 
+  
   if (!productos[nombreProducto] || productos[nombreProducto].stock <= 0) {
     mostrarNotificacion(`"${nombreProducto}" está agotado.`, 'error');
     return;
@@ -1780,40 +2060,34 @@ function manejarAgregarAlCarrito(nombreProducto) {
     abrirModal('aderezoModal');
   } else {
     // Si no requiere aderezo, agrégalo directamente al carrito
-    agregarProductoAlCarritoConDetalles(nombreProducto, null); // null para aderezo
+    await agregarProductoAlCarritoConDetalles(nombreProducto, null); // null para aderezo
   }
 }
 
 // Agrega un producto al carrito con su aderezo (o sin él) y actualiza el inventario
-function agregarProductoAlCarritoConDetalles(nombreProducto, aderezo) {
-  console.log("DEBUG: agregarProductoAlCarritoConDetalles - Agregando:", nombreProducto, "con aderezo:", aderezo); // DEBUG LOG
-  // Decrementa el stock del producto
-  productos[nombreProducto].stock--;
-  try {
-    localStorage.setItem('productos', JSON.stringify(productos)); // Guarda el inventario actualizado
-  } catch (e) {
-    console.error("Error al guardar 'productos' en localStorage:", e);
-    mostrarNotificacion('Error al guardar el inventario. Intenta de nuevo.', 'error');
+async function agregarProductoAlCarritoConDetalles(nombreProducto, aderezo) {
+  console.log("DEBUG: agregarProductoAlCarritoConDetalles - Agregando:", nombreProducto, "con aderezo:", aderezo);
+  
+  // Decrementa el stock del producto y guarda en Firebase
+  if (productos[nombreProducto]) {
+    productos[nombreProducto].stock--;
+    await guardarProductosEnFirebase(); // Guarda el inventario actualizado en Firebase
+  } else {
+    console.error(`Producto "${nombreProducto}" no encontrado en la lista de productos.`);
+    mostrarNotificacion(`Error: Producto "${nombreProducto}" no encontrado.`, 'error');
+    return;
   }
 
   // Añade el producto al carrito
   carrito.push({ 
     nombre: nombreProducto, 
-    precio: productos[nombreProducto].precio, // Asegura que el precio sea el actual
-    aderezo: aderezo, // Guarda el aderezo seleccionado
+    precio: productos[nombreProducto].precio, 
+    aderezo: aderezo, 
     id: Date.now() + Math.random() // ID único para cada instancia en el carrito
   });
   
-  try {
-    localStorage.setItem('carrito', JSON.stringify(carrito));
-  } catch (e) {
-    console.error("Error al guardar 'carrito' en localStorage:", e);
-    mostrarNotificacion('Error al guardar el carrito. Intenta de nuevo.', 'error');
-  }
-  
-  // Actualiza la UI
-  cargarProductosEnDOM(); // Para reflejar el cambio de stock
-  actualizarCarrito();
+  actualizarCarrito(); // Actualiza la UI
+  cargarProductosEnDOM(); // Para reflejar el cambio de stock en la UI
   mostrarNotificacion(`"${nombreProducto}${aderezo ? ' con ' + aderezo : ''}" agregado al carrito`, 'success');
   
   // Animar el botón del carrito
@@ -1823,10 +2097,10 @@ function agregarProductoAlCarritoConDetalles(nombreProducto, aderezo) {
 }
 
 // Finaliza la selección de aderezo y agrega el producto al carrito
-function finalizarSeleccionAderezo() {
+async function finalizarSeleccionAderezo() {
     const aderezoSeleccionado = document.querySelector('input[name="aderezo"]:checked').value;
     if (productoSeleccionadoParaAderezo) {
-        agregarProductoAlCarritoConDetalles(productoSeleccionadoParaAderezo, aderezoSeleccionado);
+        await agregarProductoAlCarritoConDetalles(productoSeleccionadoParaAderezo, aderezoSeleccionado);
     }
     productoSeleccionadoParaAderezo = null; // Limpiar la variable
     cerrarModal('aderezoModal');
@@ -1839,10 +2113,9 @@ function cancelarSeleccionAderezo() {
     mostrarNotificacion('Selección de aderezo cancelada.', 'info');
 }
 
-
 // Actualiza la visualización del carrito y el total
 function actualizarCarrito() {
-  console.log("DEBUG: actualizarCarrito - Estado actual del carrito:", carrito); // DEBUG LOG
+  console.log("DEBUG: actualizarCarrito - Estado actual del carrito:", carrito);
   const carritoItemsDiv = document.getElementById('carrito-items');
   const totalElement = document.getElementById('total');
   const badge = document.getElementById('carritoBadge');
@@ -1881,7 +2154,7 @@ function actualizarCarrito() {
 }
 
 // Elimina un producto del carrito y actualiza el inventario
-function eliminarDelCarrito(itemId) {
+async function eliminarDelCarrito(itemId) {
   const index = carrito.findIndex(item => item.id === itemId);
   if (index !== -1) {
     const productoEliminado = carrito[index];
@@ -1890,22 +2163,10 @@ function eliminarDelCarrito(itemId) {
     // Incrementa el stock del producto de vuelta en el inventario
     if (productos[productoEliminado.nombre]) {
       productos[productoEliminado.nombre].stock++;
-      try {
-        localStorage.setItem('productos', JSON.stringify(productos)); // Guarda el inventario actualizado
-      } catch (e) {
-        console.error("Error al guardar 'productos' en localStorage:", e);
-        mostrarNotificacion('Error al guardar el inventario. Intenta de nuevo.', 'error');
-      }
+      await guardarProductosEnFirebase(); // Guarda el inventario actualizado en Firebase
       cargarProductosEnDOM(); // Refleja el cambio de stock
     }
 
-    try {
-        localStorage.setItem('carrito', JSON.stringify(carrito));
-    } catch (e) {
-        console.error("Error al guardar 'carrito' en localStorage:", e);
-        mostrarNotificacion('Error al guardar el carrito. Intenta de nuevo.', 'error');
-    }
-    
     actualizarCarrito();
     mostrarNotificacion(`"${productoEliminado.nombre}" eliminado del carrito`, 'info');
   }
@@ -1913,17 +2174,21 @@ function eliminarDelCarrito(itemId) {
 
 // Abre el carrito lateral
 function abrirCarrito() {
-  console.log("DEBUG: abrirCarrito() - Llamada a la función."); // DEBUG LOG
-  cerrarTodasLasVentanas(); // Cierra cualquier otra ventana/modal abierta
+  console.log("DEBUG: abrirCarrito() - Llamada a la función.");
+  // No necesitamos cerrar todas las ventanas aquí, ya que el carrito es lateral.
+  // Pero sí aseguramos que no haya un overlay de modal encima.
   const carritoElement = document.getElementById('carrito');
   const overlayElement = document.getElementById('overlay');
 
   if (carritoElement && overlayElement) {
     carritoElement.classList.add('mostrar');
-    overlayElement.classList.add('mostrar');
-    console.log("DEBUG: abrirCarrito() - Clases 'mostrar' añadidas al carrito y overlay."); // DEBUG LOG
+    // Si no hay otro modal, mostrar el overlay
+    if (document.querySelectorAll('.modal:not(.oculto)').length === 0) {
+      overlayElement.classList.add('mostrar');
+    }
+    console.log("DEBUG: abrirCarrito() - Clases 'mostrar' añadidas al carrito y overlay si aplica.");
   } else {
-    console.error("ERROR: abrirCarrito() - Elementos #carrito o #overlay no encontrados."); // DEBUG LOG
+    console.error("ERROR: abrirCarrito() - Elementos #carrito o #overlay no encontrados.");
   }
 }
 
@@ -1934,7 +2199,7 @@ function cerrarCarrito() {
 
   if (carritoElement && overlayElement) {
     carritoElement.classList.remove('mostrar');
-    // Sólo ocultar el overlay si NO hay ningún otro modal visible
+    // Solo ocultar el overlay si NO hay ningún otro modal visible
     const anyModalVisible = document.querySelectorAll('.modal:not(.oculto)').length > 0;
     if (!anyModalVisible) {
       overlayElement.classList.remove('mostrar');
@@ -1942,122 +2207,130 @@ function cerrarCarrito() {
   }
 }
 
-// Inicia el proceso de finalización de compra pidiendo el nombre del cliente
-function iniciarFinalizarCompra() {
-    console.log("DEBUG: iniciarFinalizarCompra() - Llamada a la función."); // DEBUG LOG
+// Inicia el proceso de pago (nombre del cliente y método de pago)
+function iniciarProcesoDePago() {
+    console.log("DEBUG: iniciarProcesoDePago() - Llamada a la función.");
     if (carrito.length === 0) {
         mostrarNotificacion('El carrito está vacío. Agrega productos para finalizar la compra.', 'error');
-        console.log("DEBUG: iniciarFinalizarCompra() - Carrito vacío, no se procede."); // DEBUG LOG
+        console.log("DEBUG: iniciarProcesoDePago() - Carrito vacío, no se procede.");
         return;
     }
-    document.getElementById('nombreClienteInput').value = ''; // Limpiar campo
-    abrirModal('nombrePedidoModal');
-    console.log("DEBUG: iniciarFinalizarCompra() - Abriendo modal de nombre de cliente."); // DEBUG LOG
+    document.getElementById('clienteNombreInput').value = ''; // Limpiar campo
+    document.querySelector('input[name="paymentMethod"][value="Efectivo"]').checked = true; // Seleccionar Efectivo por defecto
+    abrirModal('paymentModal');
+    console.log("DEBUG: iniciarProcesoDePago() - Abriendo modal de pago.");
 }
 
-// Confirma el pedido con el nombre del cliente y procede a finalizar
-function confirmarPedidoConNombre() {
-    console.log("DEBUG: confirmarPedidoConNombre() - Llamada a la función."); // DEBUG LOG
-    const nombreCliente = document.getElementById('nombreClienteInput').value.trim();
-    console.log("DEBUG: confirmarPedidoConNombre() - Nombre de cliente ingresado:", nombreCliente); // DEBUG LOG
+// Confirma el pago con el nombre del cliente y el método de pago
+async function confirmarPago() {
+    console.log("DEBUG: confirmarPago() - Llamada a la función.");
+    const nombreCliente = document.getElementById('clienteNombreInput').value.trim();
+    const metodoPago = document.querySelector('input[name="paymentMethod"]:checked').value;
+    console.log("DEBUG: confirmarPago() - Cliente:", nombreCliente, "Método de Pago:", metodoPago);
 
     if (!nombreCliente) {
-        mostrarNotificacion('Por favor, ingresa tu nombre o un apodo para el pedido.', 'error');
-        console.log("DEBUG: confirmarPedidoConNombre() - Nombre de cliente vacío, mostrando error."); // DEBUG LOG
+        mostrarNotificacion('Por favor, ingresa el nombre del cliente.', 'error');
+        console.log("DEBUG: confirmarPago() - Nombre del cliente vacío, mostrando error.");
         return;
     }
     
-    finalizarCompra(nombreCliente); // Pasa el nombre al proceso de finalización
-    cerrarModal('nombrePedidoModal');
-    console.log("DEBUG: confirmarPedidoConNombre() - Modal de nombre de cliente cerrado."); // DEBUG LOG
+    await finalizarCompra(nombreCliente, metodoPago); // Pasa el nombre y método de pago
+    cerrarModal('paymentModal');
+    console.log("DEBUG: confirmarPago() - Modal de pago cerrado.");
 }
 
+
 // Procesa la compra, actualiza las estadísticas y guarda el pedido para la cocina
-function finalizarCompra(nombreCliente) {
-  console.log("DEBUG: finalizarCompra() - Iniciando proceso de compra para cliente:", nombreCliente); // DEBUG LOG
+async function finalizarCompra(nombreCliente, metodoPago) {
+  console.log("DEBUG: finalizarCompra() - Iniciando proceso de compra para cliente:", nombreCliente, "con método de pago:", metodoPago);
   const totalElement = document.getElementById('total');
   const totalCompra = parseFloat(totalElement.textContent);
-  console.log("DEBUG: finalizarCompra() - Total de la compra:", totalCompra); // DEBUG LOG
+  console.log("DEBUG: finalizarCompra() - Total de la compra:", totalCompra);
 
   const fechaActual = new Date().toISOString().slice(0, 10); // Formato ISO AAAA-MM-DD
-  const horaActual = new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' }); // Formato HH:MM
-  console.log("DEBUG: finalizarCompra() - Fecha y Hora:", fechaActual, horaActual); // DEBUG LOG
+  const horaActual = new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
 
-  // Inicializar datos de ventas para el día si no existen
-  if (!ventasDiarias[fechaActual]) {
-    ventasDiarias[fechaActual] = {
-      totalVentas: 0,
-      numeroTickets: 0,
-      productosVendidos: {}, // { nombreProducto: cantidad }
-      promocionesVendidas: {} // { nombrePromocion: cantidad }
-    };
-  }
+  // Cargar datos de ventas diarias para la fecha actual (si existen)
+  let hoyData = await obtenerVentasDiariasDeFirebase(fechaActual);
 
   // Acumular ventas del día
-  ventasDiarias[fechaActual].totalVentas += totalCompra;
-  ventasDiarias[fechaActual].numeroTickets += 1;
+  hoyData.totalVentas = (hoyData.totalVentas || 0) + totalCompra;
+  hoyData.numeroTickets = (hoyData.numeroTickets || 0) + 1;
 
   carrito.forEach(item => {
     // Contar productos vendidos
-    ventasDiarias[fechaActual].productosVendidos[item.nombre] = 
-      (ventasDiarias[fechaActual].productosVendidos[item.nombre] || 0) + 1;
+    hoyData.productosVendidos[item.nombre] = 
+      (hoyData.productosVendidos[item.nombre] || 0) + 1;
     
     // Contar promociones (si aplica)
     if (productos[item.nombre] && productos[item.nombre].categoria === 'promos') {
-      ventasDiarias[fechaActual].promocionesVendidas[item.nombre] =
-        (ventasDiarias[fechaActual].promocionesVendidas[item.nombre] || 0) + 1;
+      hoyData.promocionesVendidas[item.nombre] =
+        (hoyData.promocionesVendidas[item.nombre] || 0) + 1;
     }
   });
 
-  try {
-    localStorage.setItem('ventasDiarias', JSON.stringify(ventasDiarias));
-    console.log("DEBUG: finalizarCompra() - Ventas diarias guardadas en localStorage."); // DEBUG LOG
-  } catch (e) {
-    console.error("ERROR: finalizarCompra() - Error al guardar 'ventasDiarias' en localStorage:", e);
-    mostrarNotificacion('Error al guardar estadísticas de ventas. Intenta de nuevo.', 'error');
-  }
+  await guardarVentasDiariasEnFirebase(fechaActual, hoyData);
+  console.log("DEBUG: Ventas diarias guardadas en Firebase.");
   
-  // NUEVO: Almacenar el pedido para la pantalla de cocina
+  // Almacenar el pedido para la pantalla de cocina en Firebase
   const nuevoPedido = {
-    id: Date.now(),
+    id: Date.now().toString(), // Usamos un string como ID para el documento de Firebase
     cliente: nombreCliente,
     items: JSON.parse(JSON.stringify(carrito)), // Copia profunda del carrito
     total: totalCompra,
     hora: horaActual,
-    fecha: fechaActual
+    fecha: fechaActual,
+    metodoPago: metodoPago 
   };
-  console.log("DEBUG: finalizarCompra() - Nuevo pedido creado:", nuevoPedido); // DEBUG LOG
+  console.log("DEBUG: finalizarCompra() - Nuevo pedido creado:", nuevoPedido);
 
-  pedidosPendientes.push(nuevoPedido);
   try {
-    localStorage.setItem('pedidosPendientes', JSON.stringify(pedidosPendientes));
-    console.log("DEBUG: finalizarCompra() - Pedido añadido y guardado en pedidosPendientes en localStorage."); // DEBUG LOG
-  } catch (e) {
-    console.error("ERROR: finalizarCompra() - Error al guardar 'pedidosPendientes' en localStorage:", e);
-    mostrarNotificacion('Error al guardar el pedido para la cocina. Intenta de nuevo.', 'error');
+    const pedidosCollection = collection(db, 'pedidosPendientes');
+    await setDoc(doc(pedidosCollection, nuevoPedido.id), nuevoPedido);
+    console.log("DEBUG: Pedido añadido y guardado en pedidosPendientes en Firebase.");
+  } catch (error) {
+    console.error("Error al guardar pedido en Firebase:", error);
+    mostrarNotificacion("Error al enviar pedido a cocina. Intenta de nuevo.", 'error');
   }
-  
-  // Si la pantalla de cocina está abierta, actualízala
-  if (document.getElementById('kitchenOrdersPanel') && !document.getElementById('kitchenOrdersPanel').classList.contains('oculto')) {
-    actualizarPantallaCocina();
-    console.log("DEBUG: finalizarCompra() - Pantalla de cocina actualizada (si estaba abierta)."); // DEBUG LOG
-  }
+
+  // Mostrar el ticket/recibo al cliente
+  mostrarTicket(nuevoPedido);
+
+  // Mensaje al comprador de que el pedido está en preparación
+  mostrarNotificacion(`¡Tu pedido ya está en preparación! Gracias por tu compra, ${nombreCliente}.`, 'success');
 
   // Limpiar carrito y actualizar UI
   carrito = [];
-  try {
-    localStorage.setItem('carrito', JSON.stringify(carrito));
-    console.log("DEBUG: finalizarCompra() - Carrito vaciado en localStorage."); // DEBUG LOG
-  } catch (e) {
-    console.error("ERROR: finalizarCompra() - Error al vaciar 'carrito' en localStorage:", e);
-  }
-  
   actualizarCarrito();
   actualizarEstadisticas();
   cerrarCarrito();
-  mostrarNotificacion('¡Compra finalizada con éxito! Pedido enviado a cocina.', 'success');
-  console.log("DEBUG: finalizarCompra() - Proceso de compra finalizado."); // DEBUG LOG
+  console.log("DEBUG: finalizarCompra() - Proceso de compra finalizado.");
 }
+
+// Muestra el modal del ticket/recibo
+function mostrarTicket(pedido) {
+    document.getElementById('receiptClienteNombre').textContent = pedido.cliente;
+    document.getElementById('receiptFecha').textContent = pedido.fecha;
+    document.getElementById('receiptHora').textContent = pedido.hora;
+    document.getElementById('receiptMetodoPago').textContent = pedido.metodoPago;
+    document.getElementById('receiptTotal').textContent = pedido.total.toFixed(2);
+
+    const receiptItemsList = document.getElementById('receiptItemsList');
+    receiptItemsList.innerHTML = '';
+    pedido.items.forEach(item => {
+        const itemLi = document.createElement('li');
+        itemLi.className = 'receipt-item';
+        const aderezoText = item.aderezo && item.aderezo !== 'Sin Aderezo' ? ` (${item.aderezo})` : '';
+        itemLi.innerHTML = `
+            <span class="receipt-item-name">${item.nombre}${aderezoText}</span>
+            <span class="receipt-item-price">$${item.precio.toFixed(2)}</span>
+        `;
+        receiptItemsList.appendChild(itemLi);
+    });
+
+    abrirModal('receiptModal');
+}
+
 
 // =====================================
 // FUNCIONES DE ADMINISTRACIÓN (PANEL Y MODALES)
@@ -2065,11 +2338,11 @@ function finalizarCompra(nombreCliente) {
 
 // Abre un modal específico (usado para login, añadir, editar, etc.)
 function abrirModal(modalId) {
-  cerrarTodasLasVentanas(); // Cierra cualquier otra ventana/modal abierta
+  // Asegura que el overlay se muestre solo si un modal está abierto
+  document.querySelectorAll('.modal').forEach(m => m.classList.add('oculto')); // Oculta todos los modales primero
   document.getElementById(modalId).classList.remove('oculto');
   document.getElementById('overlay').classList.add('mostrar');
 
-  // Si es el modal de admin, enfocar el input de contraseña
   if (modalId === 'adminModal') {
     document.getElementById('adminPass').value = '';
     document.getElementById('adminPass').focus();
@@ -2082,12 +2355,13 @@ function abrirModal(modalId) {
 // Cierra un modal específico
 function cerrarModal(modalId) {
   document.getElementById(modalId).classList.add('oculto');
-  // Solo ocultar el overlay si NO hay ningún otro modal visible
   const anyModalVisible = document.querySelectorAll('.modal:not(.oculto)').length > 0;
-  if (!anyModalVisible) {
+  // Solo ocultar el overlay si NO hay ningún otro modal visible Y el carrito NO está abierto
+  const isCarritoOpen = document.getElementById('carrito').classList.contains('mostrar');
+  if (!anyModalVisible && !isCarritoOpen) {
     document.getElementById('overlay').classList.remove('mostrar');
   }
-  document.removeEventListener('keydown', handleAdminModalKeyPress); // Asegurarse de remover el listener
+  document.removeEventListener('keydown', handleAdminModalKeyPress);
 }
 
 // Maneja las teclas en el modal de admin (Enter para validar, Escape para cerrar)
@@ -2101,33 +2375,21 @@ function handleAdminModalKeyPress(event) {
 
 // Oculta todas las ventanas (carrito, modales, y ahora la pantalla de cocina)
 function cerrarTodasLasVentanas() {
-  // Cierra el carrito si está abierto
   const carritoElement = document.getElementById('carrito');
-  if (carritoElement) {
-    carritoElement.classList.remove('mostrar');
-  }
+  if (carritoElement) { carritoElement.classList.remove('mostrar'); }
 
-  // Oculta todos los modales
   document.getElementById('adminModal').classList.add('oculto');
   document.getElementById('gestionProductosModal').classList.add('oculto');
   document.getElementById('anadirProductoModal').classList.add('oculto');
   document.getElementById('editarProductoModal').classList.add('oculto');
   document.getElementById('gestionCategoriasModal').classList.add('oculto');
-  document.getElementById('nombrePedidoModal').classList.add('oculto');
   document.getElementById('aderezoModal').classList.add('oculto');
-  
-  // NUEVO: Oculta la pantalla de cocina
-  document.getElementById('kitchenOrdersPanel').classList.add('oculto');
+  document.getElementById('paymentModal').classList.add('oculto');
+  document.getElementById('receiptModal').classList.add('oculto');
+  document.getElementById('confirmarPedidoListoModal').classList.add('oculto');
 
-  // Oculta el overlay si no hay ningún modal ni carrito visible
-  const anyModalVisible = document.querySelectorAll('.modal:not(.oculto)').length > 0;
-  // Revisar si el carrito o la pantalla de cocina están visibles
-  const isCarritoVisible = carritoElement ? carritoElement.classList.contains('mostrar') : false;
-  const isKitchenPanelVisible = document.getElementById('kitchenOrdersPanel') ? !document.getElementById('kitchenOrdersPanel').classList.contains('oculto') : false;
-
-  if (!anyModalVisible && !isCarritoVisible && !isKitchenPanelVisible) {
-    document.getElementById('overlay').classList.remove('mostrar');
-  }
+  // Asegurar que el overlay se oculte si nada más está visible
+  document.getElementById('overlay').classList.remove('mostrar');
   document.removeEventListener('keydown', handleAdminModalKeyPress);
 }
 
@@ -2136,81 +2398,53 @@ function validarAcceso() {
   const password = document.getElementById('adminPass').value;
   if (password === ADMIN_PASSWORD) {
     cerrarModal('adminModal');
-    mostrarAdminPanel();
+    mostrarVista('admin'); // Usamos la nueva función para mostrar vistas
   } else {
     mostrarNotificacion('Contraseña incorrecta. Intenta de nuevo.', 'error');
   }
 }
 
-// Muestra el panel de administración y oculta la vista de cliente
-function mostrarAdminPanel() {
-  // Ocultar secciones de cliente
-  document.querySelector('header').classList.add('oculto');
-  document.querySelector('.categorias-container').classList.add('oculto');
-  document.querySelectorAll('.contenido-categoria').forEach(div => div.classList.add('oculto'));
-  document.getElementById('btnCarrito').classList.add('oculto');
-  document.querySelector('.admin-button').classList.add('oculto');
-  document.getElementById('btnModoOscuro').classList.add('oculto'); 
-
-  document.getElementById('adminPanel').classList.remove('oculto');
-  actualizarEstadisticas(); // Asegurar que las estadísticas estén actualizadas
-}
-
-// Cierra el panel de administración y vuelve a la vista de cliente
-function cerrarAdmin() {
-  // Mostrar secciones de cliente
-  document.querySelector('header').classList.remove('oculto');
-  document.querySelector('.categorias-container').classList.remove('oculto');
-  // Re-mostrar la categoría activa o la primera por defecto
-  const categoriaActiva = document.querySelector('.card-categoria.activa');
-  if (categoriaActiva) {
-    mostrarCategoria(categoriaActiva.dataset.categoria);
-  } else {
-    mostrarCategoria(Object.keys(categorias)[0] || 'promos'); // Fallback a la primera categoría si no hay activa
-  }
-  document.getElementById('btnCarrito').classList.remove('oculto');
-  document.querySelector('.admin-button').classList.remove('oculto');
-  document.getElementById('btnModoOscuro').classList.remove('oculto');
-
-  document.getElementById('adminPanel').classList.add('oculto');
-  cerrarTodasLasVentanas(); // Asegurarse de que todos los modales internos del admin se cierren
-}
-
 // Actualiza todas las estadísticas en el panel de administración
-function actualizarEstadisticas() {
+async function actualizarEstadisticas() {
   const fechaActual = new Date().toISOString().slice(0, 10);
-  const hoyData = ventasDiarias[fechaActual] || { totalVentas: 0, numeroTickets: 0, productosVendidos: {}, promocionesVendidas: {} };
-
-  // 1. Estadísticas de Ventas
-  document.getElementById('ventasDia').textContent = hoyData.totalVentas.toFixed(2);
-  const totalProductosVendidosHoy = Object.values(hoyData.productosVendidos).reduce((acc, val) => acc + val, 0);
-  document.getElementById('productosVendidos').textContent = totalProductosVendidosHoy;
-  document.getElementById('ticketPromedio').textContent = hoyData.numeroTickets > 0 ? (hoyData.totalVentas / hoyData.numeroTickets).toFixed(2) : '0.00';
-
-  // Ventas semanales (últimos 7 días incluyendo hoy)
+  
+  // Para obtener estadísticas semanales, necesitamos cargar datos de los últimos 7 días
   let ventasSemanaTotal = 0;
   let ventasSemanaProductosContador = {};
   let ventasSemanaPromocionesContador = {};
-  
+
+  // Obtener la fecha de hace 7 días
+  const sieteDiasAtras = new Date();
+  sieteDiasAtras.setDate(sieteDiasAtras.getDate() - 6); // Incluye el día actual + 6 días atrás
+
+  // Iterar y sumar las ventas de los últimos 7 días
   for (let i = 0; i < 7; i++) {
-    const d = new Date();
-    d.setDate(d.getDate() - i);
+    const d = new Date(sieteDiasAtras);
+    d.setDate(sieteDiasAtras.getDate() + i);
     const fecha = d.toISOString().slice(0, 10);
-    if (ventasDiarias[fecha]) {
-      ventasSemanaTotal += ventasDiarias[fecha].totalVentas;
-      // Sumar productos vendidos para la semana
-      for (const prod in ventasDiarias[fecha].productosVendidos) {
-        ventasSemanaProductosContador[prod] = (ventasSemanaProductosContador[prod] || 0) + ventasDiarias[fecha].productosVendidos[prod];
+    const diaData = await obtenerVentasDiariasDeFirebase(fecha);
+
+    if (diaData) {
+      ventasSemanaTotal += (diaData.totalVentas || 0);
+      for (const prod in (diaData.productosVendidos || {})) {
+        ventasSemanaProductosContador[prod] = (ventasSemanaProductosContador[prod] || 0) + diaData.productosVendidos[prod];
       }
-      // Sumar promociones vendidas para la semana
-      for (const promo in ventasDiarias[fecha].promocionesVendidas) {
-        ventasSemanaPromocionesContador[promo] = (ventasSemanaPromocionesContador[promo] || 0) + ventasDiarias[fecha].promocionesVendidas[promo];
+      for (const promo in (diaData.promocionesVendidas || {})) {
+        ventasSemanaPromocionesContador[promo] = (ventasSemanaPromocionesContador[promo] || 0) + diaData.promocionesVendidas[promo];
       }
     }
   }
+
+  // Datos de hoy
+  const hoyData = await obtenerVentasDiariasDeFirebase(fechaActual);
+
+  document.getElementById('ventasDia').textContent = (hoyData.totalVentas || 0).toFixed(2);
+  const totalProductosVendidosHoy = Object.values(hoyData.productosVendidos || {}).reduce((acc, val) => acc + val, 0);
+  document.getElementById('productosVendidos').textContent = totalProductosVendidosHoy;
+  document.getElementById('ticketPromedio').textContent = hoyData.numeroTickets > 0 ? (hoyData.totalVentas / hoyData.numeroTickets).toFixed(2) : '0.00';
+  
   document.getElementById('ventasSemana').textContent = ventasSemanaTotal.toFixed(2);
 
-  // Producto más vendido (semanal)
   let topProducto = { nombre: '-', cantidad: 0 };
   for (const prod in ventasSemanaProductosContador) {
     if (ventasSemanaProductosContador[prod] > topProducto.cantidad) {
@@ -2220,7 +2454,6 @@ function actualizarEstadisticas() {
   }
   document.getElementById('topProducto').textContent = topProducto.nombre;
 
-  // Promoción más efectiva (semanal)
   let topPromocion = { nombre: '-', cantidad: 0 };
   for (const promo in ventasSemanaPromocionesContador) {
     if (ventasSemanaPromocionesContador[promo] > topPromocion.cantidad) {
@@ -2230,18 +2463,10 @@ function actualizarEstadisticas() {
   }
   document.getElementById('topPromocion').textContent = topPromocion.nombre;
 
-  try {
-    localStorage.setItem('ventasDiarias', JSON.stringify(ventasDiarias));
-  } catch (e) {
-    console.error("Error al guardar 'ventasDiarias' en localStorage:", e);
-    mostrarNotificacion('Error al actualizar estadísticas. Intenta de nuevo.', 'error');
-  }
-
-  // 2. Estadísticas de Inventario
+  // Estadísticas de Inventario (ya cargadas al inicio desde Firebase)
   let totalUnidades = 0;
   let valorInventarioTotal = 0;
   for (const prodName in productos) {
-    // BUGFIX: Changed 'products' to 'productos'
     totalUnidades += productos[prodName].stock;
     valorInventarioTotal += productos[prodName].stock * productos[prodName].precio;
   }
@@ -2250,39 +2475,45 @@ function actualizarEstadisticas() {
 }
 
 // Resetea las estadísticas de ventas del día actual
-function resetearEstadisticas() {
+async function resetearEstadisticas() {
   if (confirm('¿Estás seguro de que quieres resetear las estadísticas del DÍA? Esta acción es irreversible.')) {
     const fechaActual = new Date().toISOString().slice(0, 10);
-    ventasDiarias[fechaActual] = {
+    const dataVacia = {
       totalVentas: 0,
       numeroTickets: 0,
       productosVendidos: {},
       promocionesVendidas: {}
     };
-    try {
-        localStorage.setItem('ventasDiarias', JSON.stringify(ventasDiarias));
-    } catch (e) {
-        console.error("Error al resetear 'ventasDiarias' en localStorage:", e);
-        mostrarNotificacion('Error al resetear las estadísticas. Intenta de nuevo.', 'error');
-    }
+    await guardarVentasDiariasEnFirebase(fechaActual, dataVacia);
     actualizarEstadisticas();
     mostrarNotificacion('Estadísticas diarias reseteadas.', 'success');
   }
 }
 
 // Exporta los datos de ventas como un archivo JSON
-function exportarVentas() {
-  const data = JSON.stringify(ventasDiarias, null, 2);
-  const blob = new Blob([data], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `ventas_punto_verde_${new Date().toISOString().slice(0, 10)}.json`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-  mostrarNotificacion('Datos de ventas exportados.', 'success');
+async function exportarVentas() {
+  try {
+    const allVentasDocs = await getDocs(collection(db, 'ventasDiarias'));
+    let allVentasData = {};
+    allVentasDocs.forEach(doc => {
+      allVentasData[doc.id] = doc.data();
+    });
+
+    const data = JSON.stringify(allVentasData, null, 2);
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `ventas_punto_verde_${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    mostrarNotificacion('Datos de ventas exportados.', 'success');
+  } catch (e) {
+    console.error("Error al exportar ventas:", e);
+    mostrarNotificacion("Error al exportar ventas. Verifica tu conexión.", 'error');
+  }
 }
 
 // =====================================
@@ -2344,7 +2575,7 @@ function abrirAnadirProductoModal() {
 }
 
 // Añade un nuevo producto al inventario
-function anadirProducto() {
+async function anadirProducto() {
   const nombre = document.getElementById('addNombreProducto').value.trim();
   const precio = parseFloat(document.getElementById('addPrecioProducto').value);
   const stock = parseInt(document.getElementById('addStockProducto').value);
@@ -2389,12 +2620,7 @@ function anadirProducto() {
   const requiresDressing = ['Baguette', 'Wrap', 'Cuernito'].some(type => nombre.includes(type));
 
   productos[nombre] = { precio: precio, stock: stock, categoria: categoria, descripcion: descripcion, requiresDressing: requiresDressing };
-  try {
-    localStorage.setItem('productos', JSON.stringify(productos));
-  } catch (e) {
-    console.error("Error al guardar 'productos' en localStorage:", e);
-    mostrarNotificacion('Error al guardar el producto. Intenta de nuevo.', 'error');
-  }
+  await guardarProductosEnFirebase(); // Guarda en Firebase
   
   cargarProductosEnDOM(); // Recargar la vista del cliente
   actualizarListaProductosAdmin(); // Actualizar lista en admin
@@ -2405,7 +2631,7 @@ function anadirProducto() {
 
 // Abre el modal para editar un producto existente
 function editarProducto(nombreProducto) {
-  productoEditando = nombreProducto; // Guarda el nombre del producto que se está editando
+  window.productoEditando = nombreProducto; // Guarda el nombre del producto que se está editando
   const prod = productos[nombreProducto];
 
   if (!prod) {
@@ -2441,13 +2667,13 @@ function editarProducto(nombreProducto) {
 }
 
 // Guarda los cambios de un producto editado
-function guardarEdicionProducto() {
-  if (!productoEditando) {
+async function guardarEdicionProducto() {
+  if (!window.productoEditando) {
     mostrarNotificacion('No hay producto seleccionado para guardar.', 'error');
     return;
   }
 
-  const nombreOriginal = productoEditando;
+  const nombreOriginal = window.productoEditando;
   const precio = parseFloat(document.getElementById('editPrecioProducto').value);
   const stock = parseInt(document.getElementById('editStockProducto').value);
   const descripcion = document.getElementById('editDescripcionProducto').value.trim();
@@ -2483,35 +2709,23 @@ function guardarEdicionProducto() {
   productos[nombreOriginal].stock = stock;
   productos[nombreOriginal].descripcion = descripcion;
   productos[nombreOriginal].categoria = categoria;
-  // `requiresDressing` no se edita en este modal, se mantiene como está o se ajusta si el nombre del producto cambia radicalmente
-  // Para este ejemplo, lo mantenemos igual.
 
-  try {
-    localStorage.setItem('productos', JSON.stringify(productos));
-  } catch (e) {
-    console.error("Error al guardar 'productos' en localStorage:", e);
-    mostrarNotificacion('Error al guardar los cambios del producto. Intenta de nuevo.', 'error');
-  }
+  await guardarProductosEnFirebase(); // Guarda en Firebase
   
   cargarProductosEnDOM();
   actualizarListaProductosAdmin();
   actualizarEstadisticas();
   mostrarNotificacion(`Producto "${nombreOriginal}" actualizado.`, 'success');
   cerrarModal('editarProductoModal');
-  productoEditando = null; // Resetear la variable
+  window.productoEditando = null; // Resetear la variable
 }
 
 // Elimina un producto del inventario
-function eliminarProducto(nombreProducto) {
+async function eliminarProducto(nombreProducto) {
   if (confirm(`¿Estás seguro de que quieres eliminar el producto "${nombreProducto}"? Esta acción es irreversible.`)) {
     if (productos[nombreProducto]) {
       delete productos[nombreProducto];
-      try {
-        localStorage.setItem('productos', JSON.stringify(productos));
-      } catch (e) {
-        console.error("Error al eliminar 'productos' de localStorage:", e);
-        mostrarNotificacion('Error al eliminar el producto. Intenta de nuevo.', 'error');
-      }
+      await guardarProductosEnFirebase(); // Guarda en Firebase
       
       cargarProductosEnDOM();
       actualizarListaProductosAdmin();
@@ -2559,11 +2773,10 @@ function actualizarListaCategoriasAdmin() {
 }
 
 // Añade una nueva categoría
-function anadirCategoria() {
+async function anadirCategoria() {
   const nombreCategoria = document.getElementById('addNombreCategoria').value.trim();
-  // Genera un ID simple a partir del nombre, removiendo espacios y caracteres especiales
   const idCategoria = nombreCategoria.toLowerCase().replace(/[^a-z0-9]/g, '').replace(/\s/g, ''); 
-  const iconoDefault = '✨'; // Icono por defecto
+  const iconoDefault = '✨';
   const imageUrlDefault = `https://placehold.co/280x180/7BAE7F/5a8a5e?text=${encodeURIComponent(nombreCategoria)}`;
 
   if (!nombreCategoria) {
@@ -2576,21 +2789,15 @@ function anadirCategoria() {
   }
 
   categorias[idCategoria] = { nombre: nombreCategoria, icono: iconoDefault, imageUrl: imageUrlDefault };
-  try {
-    localStorage.setItem('categorias', JSON.stringify(categorias));
-  } catch (e) {
-    console.error("Error al guardar 'categorias' en localStorage:", e);
-    mostrarNotificacion('Error al añadir la categoría. Intenta de nuevo.', 'error');
-  }
+  await guardarCategoriasEnFirebase(); // Guarda en Firebase
   
-  cargarCategoriasEnDOM(); // Recargar el carrusel de categorías
-  actualizarListaCategoriasAdmin(); // Actualizar lista en admin
-  // No hay estadísticas de inventario específicas para categorías.
+  cargarCategoriasEnDOM();
+  actualizarListaCategoriasAdmin();
   mostrarNotificacion(`Categoría "${nombreCategoria}" añadida.`, 'success');
 }
 
 // Elimina una categoría existente
-function eliminarCategoria(idCategoria) {
+async function eliminarCategoria(idCategoria) {
   // Verificar si hay productos en esta categoría
   const productosEnCategoria = Object.keys(productos).filter(prodName => productos[prodName].categoria === idCategoria);
   
@@ -2607,27 +2814,16 @@ function eliminarCategoria(idCategoria) {
   productosEnCategoria.forEach(prodName => {
     delete productos[prodName];
   });
-  try {
-    localStorage.setItem('productos', JSON.stringify(productos));
-  } catch (e) {
-    console.error("Error al eliminar 'productos' de localStorage:", e);
-    mostrarNotificacion('Error al eliminar productos de la categoría. Intenta de nuevo.', 'error');
-  }
-
+  await guardarProductosEnFirebase(); // Guardar cambios en productos en Firebase
 
   if (categorias[idCategoria]) {
     delete categorias[idCategoria];
-    try {
-        localStorage.setItem('categorias', JSON.stringify(categorias));
-    } catch (e) {
-        console.error("Error al eliminar 'categorias' de localStorage:", e);
-        mostrarNotificacion('Error al eliminar la categoría. Intenta de nuevo.', 'error');
-    }
+    await guardarCategoriasEnFirebase(); // Guardar cambios en categorías en Firebase
     
-    cargarCategoriasEnDOM(); // Recargar el carrusel de categorías
-    cargarProductosEnDOM(); // Recargar los productos (los de la categoría eliminada desaparecerán)
-    actualizarListaCategoriasAdmin(); // Actualizar lista en admin
-    actualizarEstadisticas(); // Por si se eliminaron productos
+    cargarCategoriasEnDOM();
+    cargarProductosEnDOM();
+    actualizarListaCategoriasAdmin();
+    actualizarEstadisticas();
     mostrarNotificacion(`Categoría "${idCategoria}" y sus productos asociados eliminados.`, 'success');
     
     // Si la categoría activa era la eliminada, cambiar a la primera disponible
@@ -2637,7 +2833,6 @@ function eliminarCategoria(idCategoria) {
       if (primeraCategoriaId) {
           mostrarCategoria(primeraCategoriaId);
       } else {
-          // Si no quedan categorías, ocultar todas las vistas de productos
           document.querySelectorAll('.contenido-categoria').forEach(div => div.classList.add('oculto'));
       }
     }
@@ -2647,34 +2842,40 @@ function eliminarCategoria(idCategoria) {
 }
 
 // =====================================
-// NUEVAS FUNCIONES: PANTALLA DE PEDIDOS EN COCINA
+// FUNCIONES: PANTALLA DE PEDIDOS EN COCINA
 // =====================================
 
-// Muestra la pantalla de pedidos en cocina
-function mostrarPantallaCocina() {
-  cerrarTodasLasVentanas(); // Cierra cualquier otra ventana/modal abierta
+// Escucha los pedidos en tiempo real desde Firebase
+function escucharPedidosDeCocina() {
+  // Si ya hay un listener activo, lo desuscribimos para evitar duplicados
+  if (unsubscribeKitchenListener) {
+    unsubscribeKitchenListener();
+    console.log("DEBUG: Listener de cocina anterior desuscrito.");
+  }
 
-  // Ocultar secciones de cliente y admin
-  document.querySelector('header').classList.add('oculto');
-  document.querySelector('.categorias-container').classList.add('oculto');
-  document.querySelectorAll('.contenido-categoria').forEach(div => div.classList.add('oculto'));
-  document.getElementById('btnCarrito').classList.add('oculto');
-  document.querySelector('.admin-button').classList.add('oculto');
-  document.getElementById('btnModoOscuro').classList.add('oculto'); 
-  document.getElementById('adminPanel').classList.add('oculto');
+  // Crea una consulta a la colección de pedidos pendientes
+  const pedidosCollectionRef = collection(db, 'pedidosPendientes');
+  const q = query(pedidosCollectionRef, orderBy('id')); // Ordenamos por ID (timestamp) para que los más nuevos salgan al final
 
-  document.getElementById('kitchenOrdersPanel').classList.remove('oculto');
-  actualizarPantallaCocina(); // Cargar los pedidos
+  // Configura el listener en tiempo real
+  unsubscribeKitchenListener = onSnapshot(q, (querySnapshot) => {
+    const nuevosPedidos = [];
+    querySnapshot.forEach((doc) => {
+      nuevosPedidos.push(doc.data());
+    });
+    pedidosPendientes = nuevosPedidos; // Actualiza la variable global
+    actualizarPantallaCocinaUI(); // Actualiza la interfaz de usuario de la cocina
+    console.log("DEBUG: Pedidos en tiempo real actualizados:", pedidosPendientes.length);
+  }, (error) => {
+    console.error("Error al escuchar pedidos de cocina:", error);
+    mostrarNotificacion("Error al sincronizar pedidos de cocina. Revisa tu conexión.", 'error');
+  });
+  console.log("DEBUG: Listener de pedidos de cocina iniciado.");
 }
 
-// Cierra la pantalla de pedidos en cocina y vuelve al admin panel
-function cerrarPantallaCocina() {
-  document.getElementById('kitchenOrdersPanel').classList.add('oculto');
-  mostrarAdminPanel(); // Vuelve al panel de administración
-}
 
 // Actualiza la visualización de los pedidos pendientes en la pantalla de cocina
-function actualizarPantallaCocina() {
+function actualizarPantallaCocinaUI() {
   const pedidosGrid = document.getElementById('pedidosPendientesGrid');
   const noPedidosMessage = document.getElementById('noPedidosMessage');
   pedidosGrid.innerHTML = ''; // Limpiar grid antes de volver a renderizar
@@ -2703,8 +2904,9 @@ function actualizarPantallaCocina() {
         ${itemsListHtml}
       </ul>
       <div class="order-total">Total: $${order.total.toFixed(2)}</div>
+      <div class="order-payment">Pago: ${order.metodoPago}</div>
       <div class="order-time">Hora del pedido: ${order.hora}</div>
-      <button class="btn-marcar-listo" onclick="marcarPedidoListo(${order.id})">
+      <button class="btn-marcar-listo" onclick="prepararMarcarPedidoListo('${order.id}')">
         ✅ Marcar como Listo
       </button>
     `;
@@ -2712,21 +2914,53 @@ function actualizarPantallaCocina() {
   });
 }
 
-// Marca un pedido como listo (lo elimina de la lista de pendientes)
-function marcarPedidoListo(orderId) {
-  const index = pedidosPendientes.findIndex(order => order.id === orderId);
-  if (index !== -1) {
-    pedidosPendientes.splice(index, 1); // Elimina el pedido
-    try {
-        localStorage.setItem('pedidosPendientes', JSON.stringify(pedidosPendientes)); // Guarda el cambio
-    } catch (e) {
-        console.error("Error al guardar 'pedidosPendientes' en localStorage:", e);
-        mostrarNotificacion('Error al marcar pedido como listo. Intenta de nuevo.', 'error');
+// Función intermedia para preparar la confirmación de "Marcar como Listo"
+function prepararMarcarPedidoListo(orderId) {
+    console.log("DEBUG: prepararMarcarPedidoListo - ID del pedido a confirmar:", orderId);
+    currentOrderIdToConfirm = orderId; // Guarda el ID globalmente
+
+    const orderToConfirm = pedidosPendientes.find(order => order.id === orderId);
+    if (orderToConfirm) {
+        document.getElementById('confirmarPedidoCliente').textContent = orderToConfirm.cliente;
+        abrirModal('confirmarPedidoListoModal');
+    } else {
+        mostrarNotificacion('Error: Pedido no encontrado para confirmar.', 'error');
+        console.error("ERROR: prepararMarcarPedidoListo - Pedido con ID", orderId, "no encontrado.");
     }
-    
-    actualizarPantallaCocina(); // Actualiza la UI de la cocina
-    mostrarNotificacion('Pedido marcado como listo.', 'info');
-  }
+}
+
+// Función que ejecuta la acción de "Marcar como Listo" después de la confirmación
+async function confirmarPedidoListoAccion() {
+    if (currentOrderIdToConfirm === null) {
+        console.error("ERROR: confirmarPedidoListoAccion - No hay ID de pedido para confirmar.");
+        mostrarNotificacion('Error en la confirmación del pedido. Intenta de nuevo.', 'error');
+        return;
+    }
+
+    const orderId = currentOrderIdToConfirm;
+    console.log("DEBUG: confirmarPedidoListoAccion - Ejecutando para ID:", orderId);
+
+    try {
+        await deleteDoc(doc(db, 'pedidosPendientes', orderId));
+        console.log(`DEBUG: Pedido ${orderId} eliminado de Firebase.`);
+        // La UI se actualizará automáticamente gracias al listener onSnapshot
+        mostrarNotificacion('Pedido marcado como listo y eliminado de la cola.', 'success');
+    } catch (e) {
+        console.error("Error al eliminar pedido de Firebase:", e);
+        mostrarNotificacion("Error al marcar pedido como listo. Intenta de nuevo.", 'error');
+    }
+
+    currentOrderIdToConfirm = null; // Reinicia la variable
+    cerrarModal('confirmarPedidoListoModal');
+    console.log("DEBUG: Modal de confirmación cerrado.");
+}
+
+// Función para cancelar la acción de "Marcar como Listo"
+function cancelarPedidoListoAccion() {
+    console.log("DEBUG: cancelarPedidoListoAccion - Acción de marcar como listo cancelada.");
+    currentOrderIdToConfirm = null; // Reinicia la variable
+    cerrarModal('confirmarPedidoListoModal');
+    mostrarNotificacion('Acción de marcar pedido como listo cancelada.', 'info');
 }
 
 // =====================================
@@ -2749,13 +2983,8 @@ function mostrarNotificacion(mensaje, tipo = 'info') {
 // Alterna entre modo oscuro y modo claro
 function toggleModoOscuro() {
   modoOscuro = !modoOscuro;
-  try {
-    localStorage.setItem('modoOscuro', modoOscuro);
-    localStorage.setItem('modoOscuroManual', 'true'); // Indicar que el usuario lo cambió manualmente
-  } catch (e) {
-    console.error("Error al guardar 'modoOscuro' en localStorage:", e);
-    mostrarNotificacion('Error al guardar la preferencia de modo oscuro. Intenta de nuevo.', 'error');
-  }
+  setSetting('modoOscuro', modoOscuro);
+  setSetting('modoOscuroManual', true); // Indicar que el usuario lo cambió manualmente
   
   aplicarModoOscuro();
   mostrarNotificacion(`Modo Oscuro: ${modoOscuro ? 'Activado' : 'Desactivado'}`, 'info');
