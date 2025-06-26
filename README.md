@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
@@ -351,38 +350,55 @@
     /* ===================================== */
     /* BOTONES FLOTANTES                     */
     /* ===================================== */
-    .boton-flotante, .admin-button {
-      position: fixed;
-      bottom: 30px;
-      background: linear-gradient(135deg, var(--verde-principal) 0%, var(--verde-oscuro) 100%);
-      color: white;
-      padding: 18px 30px;
-      border: none;
-      border-radius: 50px;
-      font-size: 1.2rem;
-      font-weight: 600;
-      cursor: pointer;
-      box-shadow: 0 10px 30px var(--sombra-fuerte);
-      z-index: 999;
-      transition: all 0.3s ease;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+    /* Base para todos los botones flotantes */
+    .floating-button {
+        position: fixed;
+        background: linear-gradient(135deg, var(--verde-principal) 0%, var(--verde-oscuro) 100%);
+        color: white;
+        border: none;
+        border-radius: 50px;
+        font-weight: 600;
+        cursor: pointer;
+        box-shadow: 0 10px 30px var(--sombra-fuerte);
+        z-index: 999;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
 
-    .boton-flotante:hover, .admin-button:hover {
+    .floating-button:hover {
       transform: translateY(-5px) scale(1.06);
       box-shadow: 0 18px 40px var(--sombra-fuerte);
     }
 
-    .boton-flotante {
-      right: 30px;
+    /* Estilo específico para el botón del carrito (más grande y central) */
+    #btnCarrito {
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 18px 30px;
+      font-size: 1.2rem;
+      z-index: 1000; /* Higher z-index for prominence */
     }
-    .admin-button {
-      left: 30px;
-      background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+
+    /* Estilos para los botones de Admin y Cocina (más pequeños) */
+    .small-floating-button {
+        padding: 12px 20px; /* Smaller padding */
+        font-size: 0.95rem; /* Smaller font size */
+        background: linear-gradient(135deg, #6c757d 0%, #495057 100%); /* Color para admin/cocina */
+    }
+
+    #btnAdmin {
+        bottom: 20px;
+        left: 20px;
+    }
+
+    #btnKitchen {
+        bottom: 20px;
+        right: 20px;
     }
 
     .carrito-badge {
@@ -1356,12 +1372,14 @@
   </div>
 
   <!-- Botones flotantes -->
-  <button class="boton-flotante" onclick="abrirCarrito()" id="btnCarrito">
+  <button class="floating-button" onclick="abrirCarrito()" id="btnCarrito">
     🛒 Ver carrito
     <span class="carrito-badge" id="carritoBadge">0</span>
   </button>
 
-  <button class="admin-button" onclick="mostrarVista('admin')">⚙️ Acceso Personal</button>
+  <button class="floating-button small-floating-button" onclick="mostrarVista('admin')" id="btnAdmin">⚙️ Acceso Personal</button>
+
+  <button class="floating-button small-floating-button" onclick="mostrarVista('cocina')" id="btnKitchen">👩‍🍳 Cocina</button>
 
   <!-- Toggle modo oscuro -->
   <button class="toggle-dark-mode" onclick="toggleModoOscuro()" id="btnModoOscuro">
@@ -1867,7 +1885,8 @@ function mostrarVista(vista) {
     document.querySelector('.categorias-container').classList.add('oculto');
     document.querySelectorAll('.contenido-categoria').forEach(div => div.classList.add('oculto'));
     document.getElementById('btnCarrito').classList.add('oculto');
-    document.querySelector('.admin-button').classList.add('oculto');
+    document.getElementById('btnAdmin').classList.add('oculto'); // Usar ID específico
+    document.getElementById('btnKitchen').classList.add('oculto'); // Ocultar nuevo botón de cocina
     document.getElementById('btnModoOscuro').classList.add('oculto');
     document.getElementById('adminPanel').classList.add('oculto');
     document.getElementById('kitchenOrdersPanel').classList.add('oculto');
@@ -1888,7 +1907,8 @@ function mostrarVista(vista) {
             document.querySelector('header').classList.remove('oculto');
             document.querySelector('.categorias-container').classList.remove('oculto');
             document.getElementById('btnCarrito').classList.remove('oculto');
-            document.querySelector('.admin-button').classList.remove('oculto');
+            document.getElementById('btnAdmin').classList.remove('oculto'); // Mostrar botón de Admin
+            document.getElementById('btnKitchen').classList.remove('oculto'); // Mostrar botón de Cocina
             document.getElementById('btnModoOscuro').classList.remove('oculto');
             // Muestra la categoría activa o la primera por defecto
             const categoriaActiva = document.querySelector('.card-categoria.activa');
@@ -1902,13 +1922,15 @@ function mostrarVista(vista) {
             break;
         case 'admin':
             document.getElementById('adminPanel').classList.remove('oculto');
-            document.querySelector('.admin-button').classList.remove('oculto'); // Mantener visible para salir
+            document.getElementById('btnAdmin').classList.remove('oculto'); // Mantener visible para salir
+            document.getElementById('btnKitchen').classList.add('oculto'); // Ocultar botón de cocina en admin
             document.getElementById('btnModoOscuro').classList.remove('oculto'); // Mantener visible
             actualizarEstadisticas();
             break;
         case 'cocina':
             document.getElementById('kitchenOrdersPanel').classList.remove('oculto');
-            document.querySelector('.admin-button').classList.remove('oculto'); // Mantener visible para salir
+            document.getElementById('btnAdmin').classList.add('oculto'); // Ocultar botón de admin en cocina
+            document.getElementById('btnKitchen').classList.remove('oculto'); // Mantener visible para salir
             document.getElementById('btnModoOscuro').classList.remove('oculto'); // Mantener visible
             escucharPedidosDeCocina(); // Inicia el listener en tiempo real
             break;
