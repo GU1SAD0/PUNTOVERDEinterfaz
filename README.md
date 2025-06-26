@@ -1,4 +1,4 @@
-html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
@@ -1609,15 +1609,15 @@ html>
     </div>
   </div>
 
+<!-- Agrega estos scripts de Firebase al inicio del body o en el head -->
+<!-- Asegúrate de que estén ANTES de tu script principal -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
-<script type="module">
+<script>
 // =====================================
 // CONFIGURACIÓN DE FIREBASE E INICIALIZACIÓN
 // =====================================
-
-// Importa las funciones necesarias de los SDKs de Firebase
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, doc, getDoc, setDoc, deleteDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 // TU CONFIGURACIÓN DE FIREBASE PROPORCIONADA
 const firebaseConfig = {
@@ -1629,9 +1629,9 @@ const firebaseConfig = {
   appId: "1:1092023571594:web:318f7af08e0844d1294973"
 };
 
-// Inicializa Firebase
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+// Inicializa Firebase (usando el objeto global 'firebase' ahora)
+const app = firebase.initializeApp(firebaseConfig);
+const db = app.firestore(); // Accede a Firestore a través de la instancia de la app
 
 // =====================================
 // VARIABLES GLOBALES (AHORA CARGADAS DESDE/HACIA FIREBASE)
@@ -1728,9 +1728,9 @@ function getSetting(key, defaultValue) {
 async function cargarDatosIniciales() {
   try {
     // --- Cargar Productos ---
-    const productosRef = doc(db, 'appData', 'productos');
-    const productosSnap = await getDoc(productosRef);
-    if (productosSnap.exists()) {
+    const productosRef = db.collection('appData').doc('productos');
+    const productosSnap = await productosRef.get();
+    if (productosSnap.exists) {
       productos = productosSnap.data(); // Carga el objeto completo
       console.log("Productos cargados desde Firebase.");
     } else {
@@ -1740,9 +1740,9 @@ async function cargarDatosIniciales() {
     }
 
     // --- Cargar Categorías ---
-    const categoriasRef = doc(db, 'appData', 'categorias');
-    const categoriasSnap = await getDoc(categoriasRef);
-    if (categoriasSnap.exists()) {
+    const categoriasRef = db.collection('appData').doc('categorias');
+    const categoriasSnap = await categoriasRef.get();
+    if (categoriasSnap.exists) {
       categorias = categoriasSnap.data(); // Carga el objeto completo
       console.log("Categorías cargadas desde Firebase.");
     } else {
@@ -1767,7 +1767,7 @@ async function cargarDatosIniciales() {
 
 async function guardarProductosEnFirebase() {
   try {
-    await setDoc(doc(db, 'appData', 'productos'), productos);
+    await db.collection('appData').doc('productos').set(productos);
     console.log("Productos guardados en Firebase.");
   } catch (e) {
     console.error("Error al guardar productos en Firebase:", e);
@@ -1777,7 +1777,7 @@ async function guardarProductosEnFirebase() {
 
 async function guardarCategoriasEnFirebase() {
   try {
-    await setDoc(doc(db, 'appData', 'categorias'), categorias);
+    await db.collection('appData').doc('categorias').set(categorias);
     console.log("Categorías guardadas en Firebase.");
   } catch (e) {
     console.error("Error al guardar categorías en Firebase:", e);
@@ -1787,7 +1787,7 @@ async function guardarCategoriasEnFirebase() {
 
 async function guardarVentasDiariasEnFirebase(fecha, data) {
   try {
-    await setDoc(doc(db, 'ventasDiarias', fecha), data, { merge: true }); // Usamos merge para actualizar si ya existe
+    await db.collection('ventasDiarias').doc(fecha).set(data, { merge: true }); // Usamos merge para actualizar si ya existe
     console.log(`Ventas diarias para ${fecha} guardadas en Firebase.`);
   } catch (e) {
     console.error("Error al guardar ventas diarias en Firebase:", e);
@@ -1797,9 +1797,9 @@ async function guardarVentasDiariasEnFirebase(fecha, data) {
 
 async function obtenerVentasDiariasDeFirebase(fecha) {
     try {
-        const docRef = doc(db, 'ventasDiarias', fecha);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
+        const docRef = db.collection('ventasDiarias').doc(fecha);
+        const docSnap = await docRef.get();
+        if (docSnap.exists) {
             return docSnap.data();
         } else {
             return { totalVentas: 0, numeroTickets: 0, productosVendidos: {}, promocionesVendidas: {} };
@@ -1895,7 +1895,9 @@ function mostrarVista(vista) {
             if (categoriaActiva) {
                 mostrarCategoria(categoriaActiva.dataset.categoria);
             } else {
-                mostrarCategoria(Object.keys(categorias)[0] || 'promos'); // Fallback a la primera categoría
+                // Aquí usamos `Object.keys(categorias)[0]` que se cargará desde Firebase.
+                // Si aún no hay categorías en Firebase, puede ser 'undefined'.
+                mostrarCategoria(Object.keys(categorias).length > 0 ? Object.keys(categorias)[0] : 'promos'); 
             }
             break;
         case 'admin':
@@ -2285,8 +2287,8 @@ async function finalizarCompra(nombreCliente, metodoPago) {
   console.log("DEBUG: finalizarCompra() - Nuevo pedido creado:", nuevoPedido);
 
   try {
-    const pedidosCollection = collection(db, 'pedidosPendientes');
-    await setDoc(doc(pedidosCollection, nuevoPedido.id), nuevoPedido);
+    const pedidosCollection = db.collection('pedidosPendientes');
+    await pedidosCollection.doc(nuevoPedido.id).set(nuevoPedido);
     console.log("DEBUG: Pedido añadido y guardado en pedidosPendientes en Firebase.");
   } catch (error) {
     console.error("Error al guardar pedido en Firebase:", error);
@@ -2493,7 +2495,7 @@ async function resetearEstadisticas() {
 // Exporta los datos de ventas como un archivo JSON
 async function exportarVentas() {
   try {
-    const allVentasDocs = await getDocs(collection(db, 'ventasDiarias'));
+    const allVentasDocs = await db.collection('ventasDiarias').get();
     let allVentasData = {};
     allVentasDocs.forEach(doc => {
       allVentasData[doc.id] = doc.data();
@@ -2854,11 +2856,11 @@ function escucharPedidosDeCocina() {
   }
 
   // Crea una consulta a la colección de pedidos pendientes
-  const pedidosCollectionRef = collection(db, 'pedidosPendientes');
-  const q = query(pedidosCollectionRef, orderBy('id')); // Ordenamos por ID (timestamp) para que los más nuevos salgan al final
+  const pedidosCollectionRef = db.collection('pedidosPendientes');
+  const q = pedidosCollectionRef.orderBy('id'); // Ordenamos por ID (timestamp) para que los más nuevos salgan al final
 
   // Configura el listener en tiempo real
-  unsubscribeKitchenListener = onSnapshot(q, (querySnapshot) => {
+  unsubscribeKitchenListener = q.onSnapshot((querySnapshot) => {
     const nuevosPedidos = [];
     querySnapshot.forEach((doc) => {
       nuevosPedidos.push(doc.data());
@@ -2941,7 +2943,7 @@ async function confirmarPedidoListoAccion() {
     console.log("DEBUG: confirmarPedidoListoAccion - Ejecutando para ID:", orderId);
 
     try {
-        await deleteDoc(doc(db, 'pedidosPendientes', orderId));
+        await db.collection('pedidosPendientes').doc(orderId).delete();
         console.log(`DEBUG: Pedido ${orderId} eliminado de Firebase.`);
         // La UI se actualizará automáticamente gracias al listener onSnapshot
         mostrarNotificacion('Pedido marcado como listo y eliminado de la cola.', 'success');
