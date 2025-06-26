@@ -1377,9 +1377,9 @@
     <span class="carrito-badge" id="carritoBadge">0</span>
   </button>
 
-  <button class="floating-button small-floating-button" onclick="mostrarVista('admin')" id="btnAdmin">⚙️ Acceso Personal</button>
+  <button class="floating-button small-floating-button" onclick="abrirAccesoAdmin()" id="btnAdmin">⚙️ Acceso Personal</button>
 
-  <button class="floating-button small-floating-button" onclick="mostrarVista('cocina')" id="btnKitchen">👩‍🍳 Cocina</button>
+  <button class="floating-button small-floating-button" onclick="abrirAccesoCocina()" id="btnKitchen">👩‍🍳 Cocina</button>
 
   <!-- Toggle modo oscuro -->
   <button class="toggle-dark-mode" onclick="toggleModoOscuro()" id="btnModoOscuro">
@@ -1390,11 +1390,24 @@
   <div id="adminModal" class="modal oculto">
     <div class="modal-content">
       <button class="btn-cerrar-modal-general" onclick="cerrarModal('adminModal')">✕</button>
-      <h3>🔐 Acceso Personal Autorizado</h3>
+      <h3>🔐 Acceso Personal (Administrador)</h3>
       <input type="password" id="adminPass" placeholder="Ingresa la contraseña" autocomplete="off"/>
       <div class="modal-buttons">
-        <button class="btn-modal btn-entrar" onclick="validarAcceso()">Entrar</button>
+        <button class="btn-modal btn-entrar" onclick="validarAdminPass()">Entrar</button>
         <button class="btn-modal btn-cancelar" onclick="cerrarModal('adminModal')">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- NUEVO: Modal de acceso para Cocina -->
+  <div id="kitchenModal" class="modal oculto">
+    <div class="modal-content">
+      <button class="btn-cerrar-modal-general" onclick="cerrarModal('kitchenModal')">✕</button>
+      <h3>🔐 Acceso a Pedidos (Cocina)</h3>
+      <input type="password" id="kitchenPass" placeholder="Ingresa la contraseña" autocomplete="off"/>
+      <div class="modal-buttons">
+        <button class="btn-modal btn-entrar" onclick="validarKitchenPass()">Entrar</button>
+        <button class="btn-modal btn-cancelar" onclick="cerrarModal('kitchenModal')">Cancelar</button>
       </div>
     </div>
   </div>
@@ -1457,9 +1470,7 @@
         <button class="btn-action editar" onclick="mostrarGestionCategorias()">
           🗂️ Gestión de Categorías
         </button>
-        <button class="btn-action" onclick="mostrarVista('cocina')">
-          👩‍🍳 Pedidos en Cocina
-        </button>
+        <!-- Eliminado: Acceso a Cocina desde Admin, ahora hay un botón directo -->
       </div>
     </div>
   </div>
@@ -1612,7 +1623,7 @@
 
   <!-- NUEVO: Panel de Pedidos en Cocina -->
   <div id="kitchenOrdersPanel" class="oculto">
-    <button class="btn-cerrar-kitchen" onclick="mostrarVista('admin')">✕</button>
+    <button class="btn-cerrar-kitchen" onclick="mostrarVista('usuario')">✕</button>
     <div class="kitchen-header">
       <h2>🍳 Pedidos en Cocina</h2>
       <p>Aquí puedes ver los pedidos pendientes y marcarlos como listos.</p>
@@ -1696,6 +1707,15 @@ const DEFAULT_PRODUCTS = {
 };
 
 const ADMIN_PASSWORD = "NDENTRAB";
+const KITCHEN_PASSWORD = "QWERTYUIOP"; // Nueva contraseña para cocina
+
+// Mapeo de aderezos a emojis de color
+const ADEREZO_EMOJIS = {
+  'Chipotle': '🟠',
+  'Mostaza Dulce': '🟡',
+  'Ranch': '⬜', // Cuadrado blanco como solicitado
+  'Sin Aderezo': '' // Sin emoji para "Sin Aderezo"
+};
 
 // Configuración de modo oscuro (true/false) - Sigue en localStorage
 let modoOscuro;
@@ -2084,13 +2104,13 @@ async function manejarAgregarAlCarrito(nombreProducto) {
     abrirModal('aderezoModal');
   } else {
     // Si no requiere aderezo, agrégalo directamente al carrito
-    await agregarProductoAlCarritoConDetalles(nombreProducto, null); // null para aderezo
+    await agregarProductoAlCarritoConDetalles(nombreProducto, null, null); // null para aderezo y emoji
   }
 }
 
 // Agrega un producto al carrito con su aderezo (o sin él) y actualiza el inventario
-async function agregarProductoAlCarritoConDetalles(nombreProducto, aderezo) {
-  console.log("DEBUG: agregarProductoAlCarritoConDetalles - Agregando:", nombreProducto, "con aderezo:", aderezo);
+async function agregarProductoAlCarritoConDetalles(nombreProducto, aderezo, aderezoEmoji) {
+  console.log("DEBUG: agregarProductoAlCarritoConDetalles - Agregando:", nombreProducto, "con aderezo:", aderezo, "emoji:", aderezoEmoji);
   
   // Decrementa el stock del producto y guarda en Firebase
   if (productos[nombreProducto]) {
@@ -2107,6 +2127,7 @@ async function agregarProductoAlCarritoConDetalles(nombreProducto, aderezo) {
     nombre: nombreProducto, 
     precio: productos[nombreProducto].precio, 
     aderezo: aderezo, 
+    aderezoEmoji: aderezoEmoji, // Guarda el emoji del aderezo
     id: Date.now() + Math.random() // ID único para cada instancia en el carrito
   });
   
@@ -2123,8 +2144,9 @@ async function agregarProductoAlCarritoConDetalles(nombreProducto, aderezo) {
 // Finaliza la selección de aderezo y agrega el producto al carrito
 async function finalizarSeleccionAderezo() {
     const aderezoSeleccionado = document.querySelector('input[name="aderezo"]:checked').value;
+    const aderezoEmoji = ADEREZO_EMOJIS[aderezoSeleccionado] || ''; // Obtener el emoji
     if (productoSeleccionadoParaAderezo) {
-        await agregarProductoAlCarritoConDetalles(productoSeleccionadoParaAderezo, aderezoSeleccionado);
+        await agregarProductoAlCarritoConDetalles(productoSeleccionadoParaAderezo, aderezoSeleccionado, aderezoEmoji);
     }
     productoSeleccionadoParaAderezo = null; // Limpiar la variable
     cerrarModal('aderezoModal');
@@ -2158,7 +2180,9 @@ function actualizarCarrito() {
   } else {
     carrito.forEach(item => {
       total += item.precio;
-      const aderezoHtml = item.aderezo ? `<div class="aderezo">Aderezo: ${item.aderezo}</div>` : '';
+      // Mostrar aderezo y su emoji si existe
+      const aderezoText = item.aderezo && item.aderezo !== 'Sin Aderezo' ? `${item.aderezoEmoji} ${item.aderezo}` : '';
+      const aderezoHtml = aderezoText ? `<div class="aderezo">Aderezo: ${aderezoText}</div>` : '';
       const itemDiv = document.createElement('div');
       itemDiv.className = 'item-carrito';
       itemDiv.innerHTML = `
@@ -2342,11 +2366,11 @@ function mostrarTicket(pedido) {
     const receiptItemsList = document.getElementById('receiptItemsList');
     receiptItemsList.innerHTML = '';
     pedido.items.forEach(item => {
+        const aderezoText = item.aderezo && item.aderezo !== 'Sin Aderezo' ? `${item.aderezoEmoji} ${item.aderezo}` : ''; // Usar aderezoEmoji
         const itemLi = document.createElement('li');
         itemLi.className = 'receipt-item';
-        const aderezoText = item.aderezo && item.aderezo !== 'Sin Aderezo' ? ` (${item.aderezo})` : '';
         itemLi.innerHTML = `
-            <span class="receipt-item-name">${item.nombre}${aderezoText}</span>
+            <span class="receipt-item-name">${item.nombre} ${aderezoText}</span>
             <span class="receipt-item-price">$${item.precio.toFixed(2)}</span>
         `;
         receiptItemsList.appendChild(itemLi);
@@ -2367,12 +2391,15 @@ function abrirModal(modalId) {
   document.getElementById(modalId).classList.remove('oculto');
   document.getElementById('overlay').classList.add('mostrar');
 
-  if (modalId === 'adminModal') {
-    document.getElementById('adminPass').value = '';
-    document.getElementById('adminPass').focus();
-    document.addEventListener('keydown', handleAdminModalKeyPress);
-  } else {
-    document.removeEventListener('keydown', handleAdminModalKeyPress);
+  // Ajusta el listener de teclado según el modal que se abre
+  document.removeEventListener('keydown', handlePasswordModalKeyPress); // Remueve el listener previo
+  if (modalId === 'adminModal' || modalId === 'kitchenModal') {
+    const passInput = document.getElementById(modalId === 'adminModal' ? 'adminPass' : 'kitchenPass');
+    if (passInput) {
+      passInput.value = ''; // Limpiar campo
+      passInput.focus();
+      document.addEventListener('keydown', handlePasswordModalKeyPress.bind(null, modalId));
+    }
   }
 }
 
@@ -2385,15 +2412,19 @@ function cerrarModal(modalId) {
   if (!anyModalVisible && !isCarritoOpen) {
     document.getElementById('overlay').classList.remove('mostrar');
   }
-  document.removeEventListener('keydown', handleAdminModalKeyPress);
+  document.removeEventListener('keydown', handlePasswordModalKeyPress);
 }
 
-// Maneja las teclas en el modal de admin (Enter para validar, Escape para cerrar)
-function handleAdminModalKeyPress(event) {
+// Maneja las teclas en los modales de contraseña (Enter para validar, Escape para cerrar)
+function handlePasswordModalKeyPress(modalId, event) {
   if (event.key === 'Escape') {
-    cerrarModal('adminModal');
+    cerrarModal(modalId);
   } else if (event.key === 'Enter') {
-    validarAcceso();
+    if (modalId === 'adminModal') {
+      validarAdminPass();
+    } else if (modalId === 'kitchenModal') {
+      validarKitchenPass();
+    }
   }
 }
 
@@ -2403,6 +2434,7 @@ function cerrarTodasLasVentanas() {
   if (carritoElement) { carritoElement.classList.remove('mostrar'); }
 
   document.getElementById('adminModal').classList.add('oculto');
+  document.getElementById('kitchenModal').classList.add('oculto'); // Nuevo
   document.getElementById('gestionProductosModal').classList.add('oculto');
   document.getElementById('anadirProductoModal').classList.add('oculto');
   document.getElementById('editarProductoModal').classList.add('oculto');
@@ -2414,17 +2446,38 @@ function cerrarTodasLasVentanas() {
 
   // Asegurar que el overlay se oculte si nada más está visible
   document.getElementById('overlay').classList.remove('mostrar');
-  document.removeEventListener('keydown', handleAdminModalKeyPress);
+  document.removeEventListener('keydown', handlePasswordModalKeyPress);
+}
+
+// Abre el modal de acceso administrativo
+function abrirAccesoAdmin() {
+  abrirModal('adminModal');
 }
 
 // Valida la contraseña para acceder al panel de administración
-function validarAcceso() {
+function validarAdminPass() {
   const password = document.getElementById('adminPass').value;
   if (password === ADMIN_PASSWORD) {
     cerrarModal('adminModal');
     mostrarVista('admin'); // Usamos la nueva función para mostrar vistas
   } else {
-    mostrarNotificacion('Contraseña incorrecta. Intenta de nuevo.', 'error');
+    mostrarNotificacion('Contraseña de administrador incorrecta. Intenta de nuevo.', 'error');
+  }
+}
+
+// Abre el modal de acceso a cocina
+function abrirAccesoCocina() {
+  abrirModal('kitchenModal');
+}
+
+// Valida la contraseña para acceder a la cocina
+function validarKitchenPass() {
+  const password = document.getElementById('kitchenPass').value;
+  if (password === KITCHEN_PASSWORD) {
+    cerrarModal('kitchenModal');
+    mostrarVista('cocina'); // Usamos la nueva función para mostrar vistas
+  } else {
+    mostrarNotificacion('Contraseña de cocina incorrecta. Intenta de nuevo.', 'error');
   }
 }
 
@@ -2444,7 +2497,7 @@ async function actualizarEstadisticas() {
   // Iterar y sumar las ventas de los últimos 7 días
   for (let i = 0; i < 7; i++) {
     const d = new Date(sieteDiasAtras);
-    d.setDate(sieteDiasAtras.getDate() + i);
+    d.setDate(sieteDiasAotras.getDate() + i);
     const fecha = d.toISOString().slice(0, 10);
     const diaData = await obtenerVentasDiariasDeFirebase(fecha);
 
@@ -2500,7 +2553,25 @@ async function actualizarEstadisticas() {
 
 // Resetea las estadísticas de ventas del día actual
 async function resetearEstadisticas() {
-  if (confirm('¿Estás seguro de que quieres resetear las estadísticas del DÍA? Esta acción es irreversible.')) {
+  // Usamos un modal de confirmación personalizado en lugar de `confirm()`
+  const confirmModal = document.createElement('div');
+  confirmModal.className = 'modal';
+  confirmModal.innerHTML = `
+    <div class="modal-content">
+      <button class="btn-cerrar-modal-general" onclick="confirmModal.remove()">✕</button>
+      <h3>Confirmar Reseteo</h3>
+      <p>¿Estás seguro de que quieres resetear las estadísticas del DÍA? Esta acción es irreversible.</p>
+      <div class="modal-buttons">
+        <button class="btn-modal btn-entrar" id="confirmResetStats">Sí, Resetear</button>
+        <button class="btn-modal btn-cancelar" onclick="confirmModal.remove()">Cancelar</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(confirmModal);
+  abrirModalTemporario(confirmModal.id); // Asegura que el modal sea visible y que el overlay esté activo
+
+  document.getElementById('confirmResetStats').onclick = async () => {
+    confirmModal.remove(); // Cierra el modal de confirmación
     const fechaActual = new Date().toISOString().slice(0, 10);
     const dataVacia = {
       totalVentas: 0,
@@ -2511,8 +2582,16 @@ async function resetearEstadisticas() {
     await guardarVentasDiariasEnFirebase(fechaActual, dataVacia);
     actualizarEstadisticas();
     mostrarNotificacion('Estadísticas diarias reseteadas.', 'success');
-  }
+  };
 }
+
+// Helper para abrir un modal temporal sin gestionar persistencia de vista
+function abrirModalTemporario(modalId) {
+    document.querySelectorAll('.modal').forEach(m => m.classList.add('oculto'));
+    document.getElementById(modalId).classList.remove('oculto');
+    document.getElementById('overlay').classList.add('mostrar');
+}
+
 
 // Exporta los datos de ventas como un archivo JSON
 async function exportarVentas() {
@@ -2746,19 +2825,37 @@ async function guardarEdicionProducto() {
 
 // Elimina un producto del inventario
 async function eliminarProducto(nombreProducto) {
-  if (confirm(`¿Estás seguro de que quieres eliminar el producto "${nombreProducto}"? Esta acción es irreversible.`)) {
-    if (productos[nombreProducto]) {
-      delete productos[nombreProducto];
-      await guardarProductosEnFirebase(); // Guarda en Firebase
-      
-      cargarProductosEnDOM();
-      actualizarListaProductosAdmin();
-      actualizarEstadisticas();
-      mostrarNotificacion(`Producto "${nombreProducto}" eliminado.`, 'success');
-    } else {
-      mostrarNotificacion(`Producto "${nombreProducto}" no encontrado.`, 'error');
-    }
-  }
+    // Usamos un modal de confirmación personalizado en lugar de `confirm()`
+    const confirmModal = document.createElement('div');
+    confirmModal.className = 'modal';
+    confirmModal.innerHTML = `
+        <div class="modal-content">
+            <button class="btn-cerrar-modal-general" onclick="confirmModal.remove()">✕</button>
+            <h3>Confirmar Eliminación</h3>
+            <p>¿Estás seguro de que quieres eliminar el producto "${nombreProducto}"? Esta acción es irreversible.</p>
+            <div class="modal-buttons">
+                <button class="btn-modal btn-entrar" id="confirmDeleteProduct">Sí, Eliminar</button>
+                <button class="btn-modal btn-cancelar" onclick="confirmModal.remove()">Cancelar</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(confirmModal);
+    abrirModalTemporario(confirmModal.id);
+
+    document.getElementById('confirmDeleteProduct').onclick = async () => {
+        confirmModal.remove(); // Cierra el modal de confirmación
+        if (productos[nombreProducto]) {
+            delete productos[nombreProducto];
+            await guardarProductosEnFirebase(); // Guarda en Firebase
+            
+            cargarProductosEnDOM();
+            actualizarListaProductosAdmin();
+            actualizarEstadisticas();
+            mostrarNotificacion(`Producto "${nombreProducto}" eliminado.`, 'success');
+        } else {
+            mostrarNotificacion(`Producto "${nombreProducto}" no encontrado.`, 'error');
+        }
+    };
 }
 
 // =====================================
@@ -2830,39 +2927,56 @@ async function eliminarCategoria(idCategoria) {
     confirmMessage = `La categoría "${categorias[idCategoria].nombre}" tiene ${productosEnCategoria.length} productos asociados. ¿Estás seguro de que quieres eliminarla? ¡Los productos de esta categoría TAMBIÉN serán eliminados!`;
   }
 
-  if (!confirm(confirmMessage)) {
-    return;
-  }
+  // Usamos un modal de confirmación personalizado en lugar de `confirm()`
+  const confirmModal = document.createElement('div');
+  confirmModal.className = 'modal';
+  confirmModal.innerHTML = `
+    <div class="modal-content">
+      <button class="btn-cerrar-modal-general" onclick="confirmModal.remove()">✕</button>
+      <h3>Confirmar Eliminación de Categoría</h3>
+      <p>${confirmMessage}</p>
+      <div class="modal-buttons">
+        <button class="btn-modal btn-entrar" id="confirmDeleteCategory">Sí, Eliminar</button>
+        <button class="btn-modal btn-cancelar" onclick="confirmModal.remove()">Cancelar</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(confirmModal);
+  abrirModalTemporario(confirmModal.id);
 
-  // Eliminar productos asociados a la categoría
-  productosEnCategoria.forEach(prodName => {
-    delete productos[prodName];
-  });
-  await guardarProductosEnFirebase(); // Guardar cambios en productos en Firebase
+  document.getElementById('confirmDeleteCategory').onclick = async () => {
+    confirmModal.remove(); // Cierra el modal de confirmación
 
-  if (categorias[idCategoria]) {
-    delete categorias[idCategoria];
-    await guardarCategoriasEnFirebase(); // Guardar cambios en categorías en Firebase
-    
-    cargarCategoriasEnDOM();
-    cargarProductosEnDOM();
-    actualizarListaCategoriasAdmin();
-    actualizarEstadisticas();
-    mostrarNotificacion(`Categoría "${idCategoria}" y sus productos asociados eliminados.`, 'success');
-    
-    // Si la categoría activa era la eliminada, cambiar a la primera disponible
-    const categoriaActiva = document.querySelector('.card-categoria.activa');
-    if (!categoriaActiva || categoriaActiva.dataset.categoria === idCategoria) {
-      const primeraCategoriaId = Object.keys(categorias)[0];
-      if (primeraCategoriaId) {
-          mostrarCategoria(primeraCategoriaId);
-      } else {
-          document.querySelectorAll('.contenido-categoria').forEach(div => div.classList.add('oculto'));
+    // Eliminar productos asociados a la categoría
+    productosEnCategoria.forEach(prodName => {
+      delete productos[prodName];
+    });
+    await guardarProductosEnFirebase(); // Guardar cambios en productos en Firebase
+
+    if (categorias[idCategoria]) {
+      delete categorias[idCategoria];
+      await guardarCategoriasEnFirebase(); // Guardar cambios en categorías en Firebase
+      
+      cargarCategoriasEnDOM();
+      cargarProductosEnDOM();
+      actualizarListaCategoriasAdmin();
+      actualizarEstadisticas();
+      mostrarNotificacion(`Categoría "${idCategoria}" y sus productos asociados eliminados.`, 'success');
+      
+      // Si la categoría activa era la eliminada, cambiar a la primera disponible
+      const categoriaActiva = document.querySelector('.card-categoria.activa');
+      if (!categoriaActiva || categoriaActiva.dataset.categoria === idCategoria) {
+        const primeraCategoriaId = Object.keys(categorias)[0];
+        if (primeraCategoriaId) {
+            mostrarCategoria(primeraCategoriaId);
+        } else {
+            document.querySelectorAll('.contenido-categoria').forEach(div => div.classList.add('oculto'));
+        }
       }
+    } else {
+      mostrarNotificacion(`Categoría "${idCategoria}" no encontrada.`, 'error');
     }
-  } else {
-    mostrarNotificacion(`Categoría "${idCategoria}" no encontrada.`, 'error');
-  }
+  };
 }
 
 // =====================================
@@ -2889,7 +3003,7 @@ function escucharPedidosDeCocina() {
     });
     pedidosPendientes = nuevosPedidos; // Actualiza la variable global
     actualizarPantallaCocinaUI(); // Actualiza la interfaz de usuario de la cocina
-    console.log("DEBUG: Pedidos en tiempo real actualizados:", pedidosPendientes.length);
+    console.log("DEBUG: Pedidos en tiempo real actualizados:", nuevosPedidos.length);
   }, (error) => {
     console.error("Error al escuchar pedidos de cocina:", error);
     mostrarNotificacion("Error al sincronizar pedidos de cocina. Revisa tu conexión.", 'error');
@@ -2918,8 +3032,9 @@ function actualizarPantallaCocinaUI() {
     
     let itemsListHtml = '';
     order.items.forEach(item => {
-      const aderezoHtml = item.aderezo ? `<span class="aderezo">(${item.aderezo})</span>` : '';
-      itemsListHtml += `<li>${item.nombre} ${aderezoHtml}</li>`;
+      // Mostrar aderezo y su emoji si existe
+      const aderezoText = item.aderezo && item.aderezo !== 'Sin Aderezo' ? `<span class="aderezo">${item.aderezoEmoji} ${item.aderezo}</span>` : '';
+      itemsListHtml += `<li>${item.nombre} ${aderezoText}</li>`;
     });
 
     orderCard.innerHTML = `
